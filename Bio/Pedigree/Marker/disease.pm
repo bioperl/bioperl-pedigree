@@ -167,7 +167,7 @@ sub num_result_alleles {
  Returns : count of total number of liability classes 
  Args    : 4 entry consisting of
            class name,
-           dominent homozygous penetrance
+           dominant homozygous penetrance
            heterozygous penetetrance
            reccessive homozygous penetrance
 
