@@ -392,9 +392,7 @@ sub find_founders {
     # find all the people who have no father or mother in the pedigree
     my %orphans;  # these will be indexed by their CHILD pointers
     foreach my $person ( $self->each_Person ){
-	print "person is ", $person->person_id, "\n";
 	if( $person->father_id == 0 ) {
-	    print "orphan: ", $person->person_id, "\n";
 	    if( $person->mother_id != 0 ) {
 		$self->throw("Person ". $person->person_id. " has is malformed, they have a mother pointer of ". $person->mother_id. " while their father_id is 0");
 	    }
