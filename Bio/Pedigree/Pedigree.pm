@@ -12,7 +12,7 @@
 
 =head1 NAME
 
-Bio::Pedigree::Pedigree - This is the toplevel object which contains references
+Bio::Pedigree::Pedigree - Toplevel object which contains references
 to the Markers genotyped for a set of families, and the families for
 which there are results.
 
@@ -125,6 +125,7 @@ sub new {
 
   my ($groups, $markers, $date,$comment) = $self->_rearrange([qw(GROUPS 
 								 MARKERS 
+								 NAME
 								 DATE 
 								 COMMENT)], @args);
   if( defined $groups ) {
@@ -147,6 +148,7 @@ sub new {
   }
   $date && $self->date($date);
   $comment && $self->comment($comment);
+  $name && $self->name($name);
   return $self;
 }
 
@@ -381,6 +383,26 @@ sub comment{
       $obj->{'_comment'} = $value;
     }
     return $obj->{'_comment'} || '';
+}
+
+=head2 name
+
+ Title   : name
+ Usage   : $obj->name($newval)
+ Function: stores pedigree name information
+ Returns : value of name
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub name{
+   my ($self,$value) = @_;
+   if( defined $value) {
+      $self->{'name'} = $value;
+    }
+    return $self->{'name'};
+
 }
 
 
