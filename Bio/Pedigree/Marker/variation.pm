@@ -2,7 +2,7 @@
 #
 # module for Bio::Pedigree::Marker::variation
 #
-# Cared for by Jason Stajich  <jason@chg.mc.duke.edu>
+# Cared for by Jason Stajich  <jason@bioperl.org>
 #
 # Copyright Jason Stajich
 #
@@ -38,7 +38,7 @@ This module manages Lapis Variation (Allele) Marker information.
 
 =head1 AUTHOR - Jason Stajich
 
-Email jason@chg.mc.duke.edu
+Email jason@bioperl.org
 
 =head1 APPENDIX
 

@@ -2,7 +2,7 @@
 #
 # BioPerl module for Bio::Pedigree::Person
 #
-# Cared for by Jason Stajich <jason@chg.mc.duke.edu>
+# Cared for by Jason Stajich <jason@bioperl.org>
 #
 # Copyright Jason Stajich
 #
@@ -20,7 +20,9 @@ Give standard usage here
 
 =head1 DESCRIPTION
 
-Describe the object here
+Represents an individual in a pedigree - stores the persons individual
+id, pointers to their parents. Sibling pointers can be derived.  Also
+stores their marker information.
 
 =head1 FEEDBACK
 
@@ -44,7 +46,7 @@ email or the web:
 
 =head1 AUTHOR - Jason Stajich
 
-Email jason@chg.mc.duke.edu
+Email jason@bioperl.org
 
 Describe contact details here
 

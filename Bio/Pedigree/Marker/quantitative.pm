@@ -2,7 +2,7 @@
 #
 # module for Bio::Pedigree::Marker::quatitative
 #
-# Cared for by Jason Stajich  <jason@chg.mc.duke.edu>
+# Cared for by Jason Stajich  <jason@bioperl.org>
 #
 # Copyright Jason Stajich
 #
@@ -31,7 +31,7 @@ This module manages Quantitative Marker information.
 
 =head1 AUTHOR - Jason Stajich
 
-Email jason@chg.mc.duke.edu
+Email jason@bioperl.org
 
 =head1 APPENDIX
 
