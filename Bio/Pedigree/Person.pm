@@ -547,4 +547,21 @@ sub proband{
 
 }
 
+sub get_last_sib {
+    my ($self,$parent) = @_;
+    
+    if( $parent->personid == $self->fatherid ) {
+	if( $self->patsib ) {
+	    return $self->patsib->get_last_sib($parent);
+	} else { 
+	    return $self;
+	}
+    } elsif( $parent->personid == $self->motherid ) {
+	if( $self->matsib ) {
+	    return $self->matsib->get_last_sib($parent);
+	} else { 
+	    return $self;
+	}
+    } else { return undef }
+}
 1;
