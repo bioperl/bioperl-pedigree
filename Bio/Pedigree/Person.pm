@@ -88,16 +88,17 @@ use Bio::Root::RootI;
             -personid  => id for the person (within this family)
                          This is only unique within a family and is typically
                          the order this person occupies in the family file.
-            -fatherid  => id for the father (numeric pointer essentially)
-            -motherid  => id for the mother (numeric pointer essentially)
+            -father    => id for the father (numeric pointer essentially)
+            -mother    => id for the mother (numeric pointer essentially)
             -gender    => ['M','F', 'U'] or ['1', '2', '0' ]
             -displayid => (optional) the display id for this person (label) 
                           useful for internal coding schemes, e.g. '1001' 
                           This will be the same as personid unless explictly
                           set.
             -childid   => (optional) child pointer id
-            -patsibid  => (optional) paternal sib pointer id
-            -matsibid  => (optional) maternal sib pointer id    
+            -patsib    => (optional) paternal sib pointer id
+            -matsib    => (optional) maternal sib pointer id    
+            -proband   => (optional) boolean if person is proband
             -results   => (optional) array ref of results to initialize this
                           person with.
 =cut
@@ -111,11 +112,11 @@ sub new {
   tie %{$self->{'_results'}}, "Tie::IxHash"; 
   # parse the arguments
   my ($personid, $fatherid, $motherid, $gender, 
-      $displayid, $child,$patsib,$matsib, 
-      $results, $pid ) = $self->_rearrange([qw(PERSONID FATHERID 
-					       MOTHERID GENDER 
-					       DISPLAYID CHILDID 
-					       PATSIBID MATSIBID
+      $displayid, $child,$patsib,$matsib, $proband,
+      $results, $pid ) = $self->_rearrange([qw(PERSONID FATHER 
+					       MOTHER GENDER 
+					       DISPLAYID CHILD 
+					       PATSIB MATSIB PROBAND
 					       RESULTS PID)], @args);
   if( ! defined $personid ) {
       $self->throw("Must specify a personid");
@@ -133,10 +134,11 @@ sub new {
   $self->gender($gender);
   # optional fields
   defined $displayid && $self->displayid($displayid);
-  defined $child && $self->childid($child);
-  defined $patsib && $self->patsibid($patsib);
-  defined $matsib && $self->matsibid($matsib);
-  defined $pid    && $self->pid($pid);
+  defined $child     && $self->childid($child);
+  defined $patsib    && $self->patsibid($patsib);
+  defined $matsib    && $self->matsibid($matsib);
+  defined $proband   && $self->proband($proband);
+  defined $pid       && $self->pid($pid);
   if( defined $results ) {
       if( ref($results) !~ /array/i ) {
 	  $self->warn("Trying to initialize a person with a results list ($results) which is not an array ref"); 
@@ -426,6 +428,26 @@ sub pid{
       $obj->{'_pid'} = $value;
     }
     return $obj->{'_pid'};
+}
+
+=head2 proband
+
+ Title   : proband
+ Usage   : $obj->proband($newval)
+ Function: 
+ Returns : value of proband
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub proband{
+   my ($obj,$value) = @_;
+   if( defined $value) {
+      $obj->{'_proband'} = $value;
+    }
+    return $obj->{'_proband'};
+
 }
 
 1;

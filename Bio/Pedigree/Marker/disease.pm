@@ -20,8 +20,7 @@ CHG::Lapis::Marker::disease - module for managing lapis DxMarker data
     my $marker = new Bio::Pedigree::Marker::disease(-name       => $name,
 						    -type       => $type,
 						    -desc       => $desc,
-						    -penetrances=> \@pens,
-						    -liab_classes=>\@classes,
+						    -liab_classes=>\%classes,
 						    -frequencies=>\@freqs);
 
 =head1 DESCRIPTION
@@ -45,21 +44,51 @@ package Bio::Pedigree::Marker::disease;
 use vars qw(@ISA);
 use strict;
 use Bio::Pedigree::Marker;
+use Tie::IxHash;
 
 @ISA = qw(Bio::Pedigree::Marker);
 
+=head2 _initialize
+
+ Title   : _initialize
+ Usage   : called by Marker::new
+ Function: Initializes disease marker specific constructor arguments 
+ Returns : boolean of success
+ Args    : (all are optional)
+           -liab_classes => hashref of liability class name to 
+                            3-pule arrayref of penetrances 
+           -frequencies  => arrayref of frequencies for disease status
+           -num_result_alleles => [1,2] number of result alleles in pedigree files
+
+=cut
+
 sub _initialize { 
     my ($self, @args) = @_;
+    $self->{'_liab_classes'} = {};
+    tie %{ $self->{'_liab_classes'} }, 'Tie::IxHash';
     # chained _initialize call to include behaviour of superclass
     $self->SUPER::_initialize(@args);
-    my ($liab_classes, $pen, $freqs) = $self->_rearrange([qw(LIAB_CLASSES 
-							     PENETRANCES
-							     FREQUENCIES)],
-							 @args);
-    $liab_classes  && $self->liab_classes(@$liab_classes);
-    $pen   && $self->penetrances(@$pen);
-    $freqs && $self->frequencies(@$freqs);
-
+    my ($liab_classes, $freqs, 
+	$numresultalleles) = $self->_rearrange([qw(LIAB_CLASSES 
+						   FREQUENCIES
+						   NUM_RESULT_ALLELES )],
+					       @args);
+    if( defined $liab_classes ) {
+	if( ref($liab_classes) !~ /hash/i ) {
+	    $self->warn("Trying to initialize liab_classes without a properly formatted hash reference");
+	} else {
+	    while( my ($liab, $pen) = each %{$liab_classes} ) {
+		if( ref($pen) !~ /array/i ||
+		    scalar @$pen != 3 ) { 
+		    $self->warn("Improperly formatted data for liability $liab - $pen, expected 3 entry array ref\n");
+			last;
+		}		  
+		$self->add_Liability_class( $liab, @$pen);
+	    }
+	}	    
+    }
+    $freqs            && $self->frequencies(@$freqs);
+    $numresultalleles && $self->num_result_alleles($numresultalleles);
     return;
 }
 
@@ -106,10 +135,15 @@ sub _initialize {
 =cut
 
 sub num_result_alleles {
+    
     # by default 1 allele value for a disease marker,
     # this may become 2 in the future when we store
-    # classes 
-    return 1;
+    # classes (extended pedformat)
+    my ($self, $value) = @_;
+    if( defined $value ) {
+	$self->{'_numresultalleles'} = $value;
+    }
+    return $self->{'_numresultalleles'} || 1;
 }
 
 =head2 type_code
@@ -124,23 +158,82 @@ sub num_result_alleles {
 
 =head1 Bio::Pedigree::Marker::disease specific methods 
 
-=head2 liab_classes
+=head2 add_Liability_class
 
- Title   : liab_classes
- Usage   : my $liab_classes = $marker->liab_classes();
- Function: Get/Set liab_classes of onset
- Returns : array of liab_classes
- Args    : [optional] liab_classes to set (array)
+ Title   : add_Liability_class
+ Usage   : my $count = $marker->add_Liability_class('N10', 
+						    0.000, 0.000, 1.000);
+ Function: Add a Liability class and associated penetrance
+ Returns : count of total number of liability classes 
+ Args    : 4 entry consisting of
+           class name,
+           dominent homozygous penetrance
+           heterozygous penetetrance
+           reccessive homozygous penetrance
 
 =cut
 
-sub liab_classes {
-    my ($self, @values) = @_;
-    if( @values || ! defined $self->{'_liab_classes'} ) {
-	@values = () unless @values;
-	$self->{'_liab_classes'} = \@values;
+sub add_Liability_class {
+    my($self,$class,@pens) =@_;
+    if( @pens != 3  ) { 
+	$self->warn("Must specify a 4 entry array to add_liability_class");
+	return 0;
     }
-    return @{$self->{'_liab_classes'}};
+    $self->{'_liab_classes'}->{uc $class} = [ @pens ];
+    return scalar keys %{ $self->{'_liab_classes'} };
+}
+
+=head2 each_Liability_class
+
+ Title   : each_Liability_class
+ Usage   : my @liab_classes = $marker->each_Liability_class();
+ Function: Return a list of each liability class
+ Returns : array of liability classes
+ Args    : none
+
+=cut
+
+sub each_Liability_class {
+    my ($self) = @_;    
+    return keys %{$self->{'_liab_classes'}};
+}
+
+=head2 remove_Liability_class
+
+ Title   : remove_Liability_class
+ Usage   : $marker->remove_Liability_class('N10');
+ Function: remove a liability class for a disease marker
+ Returns : boolean of success
+ Args    : class name
+
+=cut
+
+sub remove_Liability_class {
+   my ($self,$class) = @_;
+   return 0 if ! defined $class;
+   $class = uc $class;
+   return 0 if( ! $self->{'_liab_classes'}->{$class} );
+   delete $self->{'_liab_classes'}->{$class};
+   return 1;
+}
+
+=head2 get_Penetrance_for_Class
+
+ Title   : get_Penetrance_for_Class
+ Usage   : my ($dom,$het,$rec) = $marker->get_Penetrance_for_Class('N10');
+ Function: Retrieves the penetrance associated with a liability class
+ Returns : 3-pule array of Dom, Het, and Reccessive penetrance 
+ Args    : class name
+
+
+=cut
+
+sub get_Penetrance_for_Class {
+   my ($self,$class) = @_;
+   return () if ! defined $class;
+   $class = uc $class;
+   return ( defined $self->{'_liab_classes'}->{$class} ?
+	    @{$self->{'_liab_classes'}->{$class}} : () );
 }
 
 =head2 frequencies
@@ -160,25 +253,6 @@ sub frequencies {
 	$self->{'_frequencies'} = \@values;
     }
     return @{$self->{'_frequencies'}};
-}
-
-=head2 penetrances
-
- Title   : penetrances
- Usage   : my $pens = $marker->penetrances();
- Function: Get/Set penetrances of onset
- Returns : array of penetrances
- Args    : [optional] penetrances to set (array)
-
-=cut
-
-sub penetrances {
-    my ($self, @values) = @_;
-    if( @values || ! defined $self->{'_penetrances'} ) {
-	@values = () unless @values;
-	$self->{'_penetrances'} = [@values];
-    }
-    return @{$self->{'_penetrances'}};
 }
 
 

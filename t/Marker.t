@@ -49,8 +49,8 @@ my $dx = new Bio::Pedigree::Marker(-name => 'ALZAFF',
 				   -desc => 'Affected Alz',
 				   -type => 'disease',
 				   -frequencies => [ 0.999, 0.001],
-				   -liab_classes => [ qw(A) ],
-				   -penetrances => [ '0.0000 0.000 1.000' ]
+				   -liab_classes => 
+				   { 'A' => [ 0.0000, 0.0000, 1.0000] }
 				);
 ok($dx->isa('Bio::Pedigree::Marker') &&
    $dx->isa('Bio::Pedigree::Marker::disease')
@@ -58,9 +58,9 @@ ok($dx->isa('Bio::Pedigree::Marker') &&
 ok( $dx->name, 'ALZAFF' );
 ok( $dx->description, 'Affected Alz');
 ok( $dx->type, 'disease');
-ok( scalar $dx->liab_classes, 1);
+ok( scalar $dx->each_Liability_class, 1);
+ok( ($dx->get_Penetrance_for_Class('A'))[2], 1.000);
 ok( $dx->frequencies, 2);
-ok( $dx->penetrances, 1);
 ok( $dx->num_result_alleles, 1);
     
 my $quant = new Bio::Pedigree::Marker(-name => 'QUANT1',

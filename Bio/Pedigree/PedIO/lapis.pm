@@ -12,15 +12,18 @@
 
 =head1 NAME
 
-Bio::Pedigree::PedIO::lapis - DESCRIPTION of Object
+Bio::Pedigree::PedIO::lapis - PedIO implementation which processes LAPIS format files.
 
 =head1 SYNOPSIS
 
-Give standard usage here
+    use Bio::Pedigree::PedIO;
+    my $pedio = new Bio::Pedigree::PedIO(-format => 'lapis');
+    my $pedigree = $pedio->read_pedigree(-pedfile => 'project1.lap' );    
 
 =head1 DESCRIPTION
 
-Describe the object here
+This implementation reads and writes filestreams in the standard LAPIS
+ format (unpublished).
 
 =head1 FEEDBACK
 
@@ -83,11 +86,7 @@ use Bio::Pedigree::Result;
 
 =cut
 
-sub _initialize {
-    my ($self, @args) = @_;
-    $self->SUPER::_initialize(@args);
-    # no cmd line arguments to parse here
-}
+# no cmd line arguments to parse here
 
 =head2 read_pedigree
 
@@ -102,35 +101,33 @@ sub _initialize {
 
 sub read_pedigree {
     my ($self,@args) = @_;
-    $self->_initialize_pedfh(@args);
+    $self->_initialize_pedfh(@args); # defaults to stdin if no pedfile is specified
     my $pedigree = new Bio::Pedigree;
     my ($line,$nMarkers, $nFams,$date,@com,$comment);    
 
-    while( defined($line = $self->_readline_ped) ) {
-	last if( $line =~ /\S/ ); # skip leading whitespace lines
-    }
-    # remove leading whitespace
-    $line =~ s/^\s+(\S+)/$1/;
+    # skip blank lines
+    while( defined($line = $self->_readline_ped) && $line !~ /\S/ ) {}
+    $self->throw("premature end of lapis file") unless defined $line;
+    # remove leading, trailing whitespace
+    $line =~ s/^\s+(\S+)/$1/ && $line =~ s/(\S+)\s+$/$1/;
 
     # read in from header first
     ($nMarkers,$nFams,$date,$comment) = split(/\s+/,$line,4);
-
+    
     if( !defined $nMarkers || !defined $nFams) {
 	$self->throw("Error in header line of lapis ($line) file");
     }
     # save data and comment fields
-    $date = undef if ( $date =~ /^\s+$/);
-
-    $pedigree->date($date);
+    ( $date !~ /^\s+$/) && $pedigree->date($date);
     $pedigree->comment($comment);
 
     # let's read in all the markers
-  MARKERREAD: for(my $mkct = 0; $mkct < $nMarkers; $mkct++ ) {
+  MARKERREAD: foreach ( 1..$nMarkers ) {
       my $marker;
       # skip blank lines
-      while( defined($line = $self->_readline_ped) ) {
-	  last if ( $line =~ /\S/ );
-      }
+      while( defined($line = $self->_readline_ped) && $line !~ /\S/ ){}
+      $self->throw("premature end of lapis file") unless defined $line;
+
       if( $line =~ /^\s*(1)\s+(\d+)\s+(\S+)\s+(.+)?$/ ) {
 	  # if type code is '1' then this must be a disease marker
 	  my ($type,$nall,$name, $desc) = ($1,$2,$3,$4);
@@ -140,47 +137,50 @@ sub read_pedigree {
 	  }
 	  $line =~ s/^\s+(\S+)/$1/;
 	  my @freqs = split(/\s+/, $line);
-	  while( defined($line = $self->_readline_ped) ) {
-	      last if ( $line =~ /\S/ );
-	  }
-	  my ($liabct) = ($line =~ /^\s*(\d+)/);
-	  if( !defined $liabct )  {
+	  while( defined($line = $self->_readline_ped) && $line !~ /\S/ ) {}
+	  $self->throw("premature end of lapis file") unless defined $line;
+
+	  my $liabct;
+	  if( !defined $line || ! (($liabct) = ($line =~ /^\s*(\d+)/)) )  {
 	      $self->throw(sprintf("Filename=%s: lapis parse did not see ".
 				   "properly formatted file with a liability count".
 				   " in\n '%s'",$self->_filename, $line)); 
 	  }
-	  my (@pens,@classes);
+	  
+	  my (@pens,@classes, %liabclasses);
 	  while( defined($line = $self->_readline_ped) ) {
 	      next if ( $line =~ /^\s+$/ );
+	      # remove leading spaces
 	      $line =~ s/^\s+(\S+)/$1/;
-	      chomp($line);
-	      push @pens, $line;		
+	      push @pens, [ split(/\s+/,$line) ];		
 	      last if( @pens == $liabct);
 	  }
-
 	  # in case classes list goes onto the next line
 	  while( @classes != $liabct ) {
-	      while( defined($line = $self->_readline_ped) ) {
-		  last if ( $line =~ /\S/ );
-	      }
+	      while( defined($line = $self->_readline_ped) && $line !~ /\S/ ){}
 	      if( !defined $line ) {
 		  $self->throw(sprintf("Filename=%s: lapis parse did not see ".
 				       "properly formatted disease classes".
 				       " in \n'%s'",$self->_filename, 
 				       $line));
 	      }
+	      # remove leading and trailing spaces
 	      chomp($line);
 	      $line =~ s/^\s+(\S+)/$1/;
-	      @classes = split(/\s+/,$line);
+	      push @classes, split(/\s+/,$line);
 	  }
-
+	  foreach my $class ( @classes ) {
+	      $liabclasses{$class} = shift @pens;
+	  }
+	  if (@pens ) {
+	      $self->warn("Liability classes do not equal number of penetrances\n");
+	  }
 	  $marker = new Bio::Pedigree::Marker(-verbose => $self->verbose,
 					      -type    => 'disease',
 					      -name    => $name,
 					      -desc    => $desc || '',
 					      -frequencies  => \@freqs,
-					      -liab_classes => \@classes,
-					      -penetrances  => \@pens, 
+					      -liab_classes => \%liabclasses,
 					      );	    
       } elsif( $line =~ /^\s*(3)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+)?$/ ) {
 	  my ( $type, $nall, $chrom, $name, $desc) = ($1,$2,$3,$4,$5);
@@ -216,10 +216,10 @@ sub read_pedigree {
       $pedigree->add_Marker($marker);
   }
 
-  FAMILYREAD: for( my $famct = 0; $famct < $nFams; $famct++ ) {
-      while( defined($line = $self->_readline_ped) ) {
-	  last if ( $line =~ /\S/ );
-      }
+  FAMILYREAD: foreach (1..$nFams) {
+      while( defined($line = $self->_readline_ped) && $line !~ /\S/ ){}
+      $self->throw("premature end of lapis file") unless defined $line;
+
       # remove leading whitespace
       $line =~ s/\s+(\S+)/$1/;
       my ($nInds, $dbledinds, $FTYPE, 
@@ -230,23 +230,30 @@ sub read_pedigree {
 					    -center  => $ctr,
 					    -type    => $FTYPE,
 					    -desc    => $desc);
-      for ( my $indct = 0; $indct < $nInds; $indct++ ) {
-	  while( defined($line = $self->_readline_ped) ) {
-	      last if ( $line =~ /\S/ );
-	  }
+      foreach ( 1..$nInds ) {
+	  while( defined($line = $self->_readline_ped) && $line !~ /\S/ ){}
+	  $self->throw("premature end of lapis file") unless defined $line;
+
 	  my ($indnum,$father,$mother,
 	      $gender, @results) = split(/\s+/,$line);
 
 	  my $person = new Bio::Pedigree::Person(-verbose => $self->verbose,
-						 -personid   => $indnum,
-						 -fatherid   => $father,
-						 -motherid   => $mother,
-						 -gender     => $gender);
+						 -personid => $indnum,
+						 -father   => $father,
+						 -mother   => $mother,
+						 -gender   => $gender);
 	  my $result_num = scalar @results;
 	  foreach my $marker ( $pedigree->each_Marker ) {
 	      my @mkresult;
 	      my $zero;
-	      while( scalar @mkresult < $marker->num_result_alleles) {
+	      while( (scalar @mkresult) < $marker->num_result_alleles) {
+		  if( ! @results ) {
+		      while( defined($line = $self->_readline_ped) && 
+			     $line !~ /\S/ ){}
+		      $self->throw("premature end of lapis file")
+			  unless defined $line;		      
+		      @results = split(/\s+/,$line);
+		  }
 		  my $val = shift @results;
 		  $zero = ( $val =~ /^0$/ );
 		  push (@mkresult,$val);
@@ -261,19 +268,18 @@ sub read_pedigree {
 	  $group->add_Person($person);
       }
       for( my $dblct = 0; $dblct < $dbledinds; $dblct++ ){
-	  while( defined($line = $self->_readline_ped) ) {
-#	      # stop if line has anything that is not whitespace
-	      last if ( $line =~ /\S/ );
-	  }
+	  while( defined($line = $self->_readline_ped) && $line !~ /\S/ ){}
+	  $self->throw("premature end of lapis file") unless defined $line;
+
+
 #	  my ($id, $dbledid) = split(/\s+/,$line);
 #	  $group->add_DoubledPerson(-id => $id,
 #				     -dbledid => $dbledid);
       }
-
-      while( defined($line = $self->_readline_ped) ) {
-	  last if ( $line =~ /\S/ );
-      }
-      if( $line !~ /7000/ ) {
+      while( defined($line = $self->_readline_ped) && $line !~ /\S/ ){}
+      $self->throw("premature end of lapis file") unless defined $line;
+ 
+     if( $line !~ /7000/ ) {
 	  $self->throw("Last line of family did not end in 7000, was $line");
       }
       $pedigree->add_Group($group);
@@ -295,12 +301,15 @@ sub read_pedigree {
  Args    : -pedigree => Bio::Pedigree object
            -pedfile / -pedfh => pedigree output location
            -datfile / -datfh => (if needed) marker data output location
-
+           (datfile not needed for lapis format)
+    
 =cut
 
 sub write_pedigree {
     my ($self,@args) = @_;
-    $self->_initialize_pedfh(@args);
+    $self->_initialize_pedfh(@args); # defaults to STDOUT if no 
+                                     # pedfile specified
+
     my ($pedigree) = $self->_rearrange([qw(PEDIGREE)], @args);
     if( !defined $pedigree || !ref($pedigree) || 
 	!$pedigree->isa('Bio::Pedigree') ) {
@@ -316,7 +325,7 @@ sub write_pedigree {
 			       $pedigree->comment));
     
     # now let's print the markers
-    foreach my $marker ( @mkrs ) {	
+    foreach my $marker ( @mkrs ) {
 	if( uc($marker->type) eq 'DISEASE') {
 	    my @freqs = $marker->frequencies;
 	    # print marker line
@@ -327,11 +336,11 @@ sub write_pedigree {
 				       $marker->description));
 	    # print frequencies
 	    $self->_print_ped( join(" ", @freqs), "\n");
-	    my @liabs = $marker->liab_classes;
-	    my @pens = $marker->penetrances;
+	    my @liabs = $marker->each_Liability_class;
+	    
 	    $self->_print_ped( sprintf("%3d\n", scalar @liabs));
-	    foreach my $pen ( @pens ) {
-		$self->_print_ped( sprintf(" %s\n", $pen) ); 
+	    foreach my $class ( @liabs ) {
+		$self->_print_ped( sprintf(" %s\n", join(' ', $marker->get_Penetrance_for_Class($class)))); 
 	    }
 	    $self->_print_ped( join( " ", @liabs), "\n" );
 	} elsif( uc($marker->type) eq 'VARIATION' ) {

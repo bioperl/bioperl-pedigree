@@ -22,8 +22,8 @@ my @r = ( new Bio::Pedigree::Result(-name    => 'D1S234',
 my @p;
  
 push @p, ( new Bio::Pedigree::Person(-personid => 1,
-				     -fatherid => 0,
-				     -motherid => 0,
+				     -father   => 0,
+				     -mother   => 0,
 				     -gender   => 'M',
 				     -results  => [@r]) );
 
@@ -33,8 +33,8 @@ push @p, ( new Bio::Pedigree::Person(-personid => 1,
 				 -alleles => ['U'] ),		
        );
 push @p, ( new Bio::Pedigree::Person(-personid => 2,
-				     -fatherid => 0,
-				     -motherid => 0,
+				     -fathe    => 0,
+				     -mother   => 0,
 				     -gender   => 'F',
 				     -results  => [@r]) );
 
@@ -50,8 +50,8 @@ foreach my $allele ( $p[1]->get_Result('D1S234')->alleles ) {
        );
 
 push @p, ( new Bio::Pedigree::Person(-personid => 3,
-				     -fatherid => 1,
-				     -motherid => 2,
+				     -father   => 1,
+				     -mother   => 2,
 				     -gender   => 'M',
 				     -results  => [@r] ));
 

@@ -101,7 +101,12 @@ sub _initialize {
 
 sub num_result_alleles {
     # by default 1 allele value for a quantitative marker 
-    return 1;
+
+    my ($self, $value) = @_;
+    if( defined $value ) {
+	$self->{'_numresultalleles'} = $value;
+    }
+    return $self->{'_numresultalleles'} || 1;
 }
 
 =head2 type_code

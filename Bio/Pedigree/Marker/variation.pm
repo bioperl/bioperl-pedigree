@@ -26,7 +26,7 @@ Bio::Pedigree::Marker::variation - module for managing variations (SNP, msat)
 							 136  => 0.0851,
 							 138  => 0.2128,
 							 140  => 0.0532,
-							 0    => 0.4574 },
+						     },
 					   -fwdflank => $seqfwd,
 					   -revflank => $seqrev
 );
@@ -123,6 +123,74 @@ sub _initialize {
     return;
 }
 
+=head2 name
+
+ Title   : name
+ Usage   : my $name = $marker->name();
+ Function: Get/Set marker name
+ Returns : string
+ Args    : [optional] marker name to set
+
+=cut
+
+
+=head2 type
+
+ Title   : type
+ Usage   : my $type = $variation->type;
+ Function: Get marker type - valid types are defined by 
+           implementing classes
+ Returns : type value
+ Args    : none
+
+=cut
+
+# I guess this is an okay way to do this
+
+sub type { return 'VARIATION'; }
+
+=head2 description
+
+ Title   : description
+ Usage   : my $desc = $marker->description();
+ Function: Get/Set marker description
+ Returns : string
+ Args    : [optional] marker description to set
+
+=cut
+
+=head2 num_result_alleles
+
+ Title   : num_result_alleles
+ Usage   : my $numalleles = $marker->num_result_alleles();
+ Function: Get number of results for this type of marker           
+ Returns : integer
+ Args    : none
+
+=cut
+
+sub num_result_alleles {
+    # by default 2 allele value for a variation marker,
+    my ($self, $value) = @_;
+    if( defined $value ) {
+	$self->{'_numresultalleles'} = $value;
+    }
+    return $self->{'_numresultalleles'} || 2;
+}
+
+=head2 type_code
+
+ Title   : type_code
+ Usage   : my $code_type = $marker->type_code();
+ Function: Get marker code type
+ Returns : integer
+ Args    : none
+
+=cut
+
+=head1 Bio::Pedigree::Marker::variation specific methods 
+
+
 =head2 upstream_flanking_seq
 
  Title   : upstream_flanking_seq
@@ -180,69 +248,6 @@ sub dnstream_flanking_seq{
     }
     return $self->{'_dnstrmflank'};
 }
-
-=head2 name
-
- Title   : name
- Usage   : my $name = $marker->name();
- Function: Get/Set marker name
- Returns : string
- Args    : [optional] marker name to set
-
-=cut
-
-
-=head2 type
-
- Title   : type
- Usage   : my $type = $variation->type;
- Function: Get marker type - valid types are defined by 
-           implementing classes
- Returns : type value
- Args    : none
-
-=cut
-
-# I guess this is an okay way to do this
-
-sub type { return 'VARIATION'; }
-
-=head2 description
-
- Title   : description
- Usage   : my $desc = $marker->description();
- Function: Get/Set marker description
- Returns : string
- Args    : [optional] marker description to set
-
-=cut
-
-=head2 num_result_alleles
-
- Title   : num_result_alleles
- Usage   : my $numalleles = $marker->num_result_alleles();
- Function: Get number of results for this type of marker           
- Returns : integer
- Args    : none
-
-=cut
-
-sub num_result_alleles {
-    # by default 2 allele value for a variation marker 
-    return 2;
-}
-
-=head2 type_code
-
- Title   : type_code
- Usage   : my $code_type = $marker->type_code();
- Function: Get marker code type
- Returns : integer
- Args    : none
-
-=cut
-
-=head1 Bio::Pedigree::Marker::variation specific methods 
 
 =head2 chrom
 

@@ -1,5 +1,3 @@
-# $Id$
-
 # -*-Perl-*-
 
 use strict;
@@ -12,11 +10,12 @@ BEGIN {
 }
 
 use Bio::Pedigree::PedIO;
+use Bio::Root::IO;
 
 # test lapis input
-my $lapisio = new Bio::Pedigree::PedIO( -format => 'lapis');
+my $lapisio = new Bio::Pedigree::PedIO( -format => 'lapis', -verbose=>2);
 ok ($lapisio);
-my $pedigree = $lapisio->read_pedigree(-pedfile => 't/data/test1.lap');
+my $pedigree = $lapisio->read_pedigree(-pedfile => Bio::Root::IO->catfile('t','data','test1.lap'));
 
 ok ($pedigree);
 ok ($pedigree->num_of_groups, 7);
@@ -50,7 +49,7 @@ ok ( $person->pid, 4);
 ok ( $person->personid, '2001');
 ok ( $person->fatherid, '3000');
 ok ( $person->motherid, '3001');
-ok ( $person->childid, undef);
+ok ( ! defined $person->childid);
 ok ( $person->gender, 'F');
 ok ( $person->each_Result, 1);
 
@@ -62,7 +61,7 @@ ok ( $person->pid, 10);
 ok ( $person->personid, '0001');
 ok ( $person->fatherid, '1000');
 ok ( $person->motherid, '1001');
-ok ( $person->childid, undef);
+ok ( ! defined $person->childid );
 ok ( $person->gender, 'M');
 ok ( $person->each_Result, 5);
 
@@ -75,3 +74,7 @@ ok (($person->get_Result('MKR90')->alleles)[1],'159');
 
 $lapisio->write_pedigree(-pedigree => $pedigree,
 			 -pedfile  => \*STDOUT);
+
+my $xmlio = new Bio::Pedigree::PedIO( -format => 'xml' );
+$xmlio->write_pedigree( -pedigree => $pedigree,
+			-pedfile  => \*STDOUT);

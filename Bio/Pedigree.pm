@@ -18,11 +18,38 @@ which there are results.
 
 =head1 SYNOPSIS
 
-Give standard usage here
+{
+    use Bio::Pedigree;
+    use Bio::Pedigree::PedIO;
+    # get a Bio::Pedigree object somehow (PedIO system typically)
+    my $pedio = new Bio::Pedigree::PedIO(-format => 'xml');
+    my $pedigree = $pedio->read_pedigree(-pedfile => 'pedigree_example.xml');
+
+    print "date is ", $pedigree->date, "\n";
+    print "comment is ", $pedigree->comment ,"\n";
+    
+    print "markers are :\n";
+    foreach my $markername ( $pedigree->each_Marker('name') ) {
+	print "$markername\n";
+    }
+    foreach my $group ( $pedigree->each_Group ) {
+	print "group name is ", $group->center_groupid, "\n";
+	foreach my $person ( $pedigree->each_Person ) {
+	    print $person->personid, " ", $person->gender, "\n";
+	}
+    }
+}
 
 =head1 DESCRIPTION
 
-Describe the object here
+This object is the toplevel object which contains all the Groups and
+Marker objects that are part of a pedigree set.  More than one
+Family/Group can be contained within a pedigree which may be counter
+to the name 'PEDIGREE' which implies all the components within this
+object are part of the same lineage.  In this implementation a
+Pedigree is a container for the list of Markers (and their order) as
+well as the list of Groups (or Families) which have individuals with
+Marker genotypes.
 
 =head1 FEEDBACK
 
@@ -236,7 +263,7 @@ sub add_Marker{
        $self->warn("Trying to add a marker with data $marker which is not a Bio::Pedigree::MarkerI object");
    }
    if( $self->{'_markers'}->{uc $marker->name} && ! $overwrite) {
-       $self->warn("Marker ", uc $marker->name, " already exists");
+       $self->warn("Marker " . uc $marker->name . " already exists");
    } else { 
        $self->{'_markers'}->{uc $marker->name} = $marker;
    }
@@ -359,7 +386,35 @@ sub comment{
 }
 
 
+=head2 Algorithms and toplevel data access
+
+=head2 calculate_all_relationships
+
+ Title   : calculate_all_relationships
+ Usage   : $pedigree->calculate_all_relationships
+ Function: Convience function - 
+           calculates all the relationships by calling
+           calculate_relationships on each Group object
+ Returns : count of number of relationships updated
+ Args    : Type of warning to use 'warnOnError', 'failOnError', or
+           do not report warnings.
+           See also L<Bio::Pedigree::Group>
+=cut
+
+sub calculate_all_relationships {
+   my ($self,$warningtype) = @_;
+   my $count = 0;
+   foreach my $group ( $self->each_Group ) {
+       $count += $group->calculate_relationships($warningtype);
+   }
+   return $count;
+}
+
 # change the group order
 
 # change the marker order
+
+
 1;
+
+

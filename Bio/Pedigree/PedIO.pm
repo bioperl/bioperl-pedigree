@@ -65,6 +65,7 @@ use strict;
 
 use Bio::Root::RootI;
 use Symbol;
+
 require Exporter;
 
 BEGIN { $DEFAULTDIGITLEN = 4; }
@@ -173,17 +174,23 @@ sub write_pedigree {
 
 =cut
 
-sub close { } # do nothing here for now          
+sub close { 
+    my($self) = @_;
+    if( defined $self->_pedfh ) {
+	close($self->_pedfh);
+    }
+    if( defined $self->_datfh ) {
+	close($self->_datfh);
+    }
+}
 
 =head2 _initialize_pedfh
 
  Title   : _initialize_pedfh
- Usage   :
- Function:
- Example :
- Returns : 
- Args    :
-
+ Usage   : $pedio->_initialize_pedfh(@args)
+ Function: Initialize pedigree data input from file or fh
+ Returns : whether or not a pedfh was initialized
+ Args    : -pedfile  -- either filehandle, GLOB, or filename
 
 =cut
 
@@ -207,11 +214,10 @@ sub _initialize_pedfh {
 =head2 _initialize_datfh
 
  Title   : _initialize_datfh
- Usage   :
- Function:
- Example :
- Returns : 
- Args    :
+ Usage   : $pedio->_initialize_datfh(@args)
+ Function: Initialize marker data input from file or fh
+ Returns : whether or not a datfh was initialized
+ Args    : -datfile -- either filehandle, GLOB, or filename
 
 
 =cut
@@ -240,10 +246,9 @@ sub _initialize_datfh {
  Returns : value of _pedfh
  Args    : newvalue (optional)
 
-
 =cut
 
-sub _pedfh{
+sub _pedfh {
    my ($obj,$value) = @_;
    if( defined $value) {
       $obj->{'_pedfh'} = $value;
@@ -259,16 +264,14 @@ sub _pedfh{
  Returns : value of _datfh
  Args    : newvalue (optional)
 
-
 =cut
 
-sub _datfh{
+sub _datfh {
    my ($obj,$value) = @_;
    if( defined $value) {
       $obj->{'_datfh'} = $value;
     }
     return $obj->{'_datfh'};
-
 }
 
 

@@ -354,4 +354,112 @@ sub type {
     return $self->{'_type'};
 }
 
+=head2 Algorithms
+
+=head2 calculate_relationships
+
+ Title   : calculate_relationships
+ Usage   : $group->calculate_relationships('warn');
+ Function: Calculates child->parent pointers and sibships and
+           fills in information for people where applicable
+ Returns : number of updates made
+ Args    : warnings - if program should warn when updating
+           incorrectly specified relationships
+           valid input is 
+           'warnOnError' - to display warnings but to overwrite
+           'failOnError' - to throw and exception when an error is found
+           passing anything else (or no argument) will cause method to 
+           update errors quietly
+=cut
+
+sub calculate_relationships {
+   my ($self,$warnings) = @_;
+   my $warntype = sub { print $_[0], "\n"};
+   if( defined $warnings && $warnings ne '' ) {
+       if( $warnings =~ /warnonerror/i ) { 
+	   print "assigning warntype\n";
+	   $warntype = sub { $self->warn($_[0]) };
+       } elsif ( $warnings =~ /failonerror/i ) {
+	   $warntype = sub { $self->throw($_[0]) };
+       } else {
+	   $self->warn("Unrecognized warning flag - $warnings.\nWill not notify on errors");  
+       }
+   }
+   return $self->_helper_calculate_relationships
+       ([sort {$a<=>$b} $self->each_Person('id')], 
+	$warntype);
+}
+
+# helper method - not public
+
+sub _helper_calculate_relationships {
+    my ($group,$ids, $warntype) = @_;
+    return 0 if ( @$ids == 0);
+    my @ids = @$ids;
+    my $id = shift @ids;
+    my $person = $group->get_Person($id);
+    my $count = 0;
+    return 0 if( ! $person );
+    if( $person->fatherid ) {
+	if( ! $person->motherid ) { $group->throw("MotherID does not exist for individual $id, which does have a fatherid ".$person->fatherid); }
+	my $father = $group->get_Person($person->fatherid);
+	my $mother = $group->get_Person($person->motherid);
+	if( $father->gender ne 'M' ) {
+	    $warntype->("Expected gender to be 'M' for ". $person->fatherid);
+	    $father->gender('M');			
+	}
+	if( $mother->gender ne 'F' ) {
+	    $warntype->("Expected gender to be 'F' for ". $person->motherid);
+	    $mother->gender('F');			
+	}
+	$count += $group->_add_child($father, $id);
+	$count += $group->_add_child($mother, $id);	
+     }
+    # this will try and hit every node - as it will go through the whole 
+    # list of individuals
+    # this could be computationally expensive so we may need to
+    # improve the algorithm
+    return $count + $group->_helper_calculate_relationships(\@ids,$warntype);
+}
+
+# helper method for updating relationships
+
+sub _add_child {
+    my ($group,$parent,$child) = @_;
+    if( ! $parent->childid ) {
+	$parent->childid($child);
+	return 1;
+    } else {
+#	return 0 if( $parent->childid == $child);
+	my $firstchild = $group->get_Person($parent->childid);
+	if( ! defined $firstchild ) {
+	    $group->throw("Person ". $parent->personid. 
+			  " has reference to 1st child as ". 
+			  $parent->childid . " which does not exist in this group");
+	}
+	return $group->_add_sib($firstchild, $child, 
+				    $parent->gender eq 'M');
+    }
+}
+
+# helper method for updating relationships
+
+sub _add_sib {
+    my ($group,$sib,$id, $paternalsib) = @_;
+    my $sibname = ( $paternalsib ) ? 'patsibid' : 'matsibid';
+    if( $sib->$sibname() ) {
+	return 0 if ( $sib->$sibname() == $id);
+	my $firstsib = $group->get_Person($sib->$sibname());
+	if( ! defined $firstsib) {
+	    $group->throw("Person ". $sib->personid . 
+			  "has a reference to 1st $sibname as ".
+			  $sib->$sibname() . " which does not exist in this group");
+	}
+	$group->_add_sib($firstsib, $id, $paternalsib);	
+    }
+    else {
+	$sib->$sibname($id);
+	return 1;
+    }
+}
 1;

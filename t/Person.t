@@ -21,8 +21,8 @@ my @r = ( new Bio::Pedigree::Result(-name    => 'D1S234',
 		);
 
 my $person = new Bio::Pedigree::Person(-personid => 1,
-				       -fatherid => 0,
-				       -motherid => 0,
+				       -father => 0,
+				       -mother => 0,
 				       -gender   => 'M',
 				       -results  => [@r]);
 ok ($person);
