@@ -99,7 +99,7 @@ use Bio::Root::Root;
                           set.
             -childid   => (optional) child pointer id
             -patsib    => (optional) paternal sib pointer id
-            -matsib    => (optional) maternal sib pointer id    
+            -matsib    => (optional) maternal sib pointer id
             -proband   => (optional) boolean if person is proband
             -results   => (optional) array ref of results to initialize this
                           person with.
