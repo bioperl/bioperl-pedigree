@@ -118,11 +118,11 @@ sub new {
 
   my $self = $class->SUPER::new(@args);
   
-  my ($groupid, $center, $people,
+  my ($groupid, $center, $people, 
       $type) = $self->_rearrange([ qw(GROUP_ID 
-							 CENTER PEOPLE
-							 TYPE)] , @args);
-
+				      CENTER PEOPLE
+				      TYPE)] , @args);
+  
   if( !defined $groupid || ! defined $center ) {
       $self->throw("Must defined groupid and center to initialize a $class object");
   }
@@ -228,15 +228,11 @@ sub each_Person{
 =cut
 
 sub get_Person{
-   my ($self,$id) = @_;
-   my @inds = @{$self->{'_individuals'}};
-   return unless @inds;
-   foreach my $p ( @inds ) { 
-       if( $p->person_id eq $id ) { 
-	   return $p;
-       }
-   }
-   return undef;
+    my ($self,$id) = @_;
+    foreach my $person ( $self->get_Individuals() ) {
+	return $person if $person->person_id eq $id;
+    }
+    return undef;
 }
 
 =head2 remove_Marker
