@@ -162,7 +162,7 @@ sub draw {
 	s/\.pm$//;
     }
     my $marker;
-    foreach my $m ( $pedigree->each_Marker ) {
+    foreach my $m ( $pedigree->get_Markers ) {
 	if( $m->type eq 'DISEASE' ) { $marker = $m; last;}
     }
     my $renderengine = $rendermodule->new(-verbose => $self->verbose);
