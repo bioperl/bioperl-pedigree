@@ -33,6 +33,9 @@ END {
     for ($Test::ntest..$NUMTESTS) {
 	skip("unable to run all of the PedIO tests, check your XML installation",1);
     }
+    unless( $DEBUG ) {
+	unlink(qw(test.xml));
+    }
 }
 
 if( $error == 1 ) {
@@ -155,9 +158,10 @@ if( $DEBUG ) {
 			     -pedfile  => \*STDOUT);
 }
 unless( $SKIPXML ) { 
-    my $xmlio = new Bio::Pedigree::PedIO( -format => 'xml' );
+    my $xmlio = new Bio::Pedigree::PedIO( -format => 'xml');
+					  
     $xmlio->write_pedigree( -pedigree => $pedigree,
-			    -pedfile  => \*STDOUT);
+			    -pedfile  => ">test.xml");
     ok(1);
 } else { 
     skip("Skipping XML output since XML::Writer is not installed\n",1);

@@ -123,7 +123,7 @@ sub write_pedigree {
 	$self->warn("could not initialize output filehandle\n");
 	return;
     }
-    my $outfh = new IO::File(">test.xml");
+    my $outfh = $self->_pedfh->_fh;
     my ($pedigree) = $self->_rearrange([qw(PEDIGREE)], @args);
     if( !defined $pedigree || !ref($pedigree) || 
 	!$pedigree->isa('Bio::Pedigree::Pedigree') ) {
@@ -177,10 +177,11 @@ sub write_pedigree {
 		$writer->characters($seq->seq());
 		$writer->endTag("DNSTREAMSEQ");
 	    }
-	    foreach my $allele ( $marker->known_alleles ) {
+	    my %af = $marker->get_Allele_Frequencies;
+	    foreach my $allele ( keys %af ) {
 		$writer->emptyTag("MARKER_ALLELE",
 				  "allele" => $allele,
-				  "frequency" => $marker->get_allele_frequency($allele));
+				  "frequency" => $af{$allele});
 	    }
 	}
 	$writer->endTag("MARKER");
