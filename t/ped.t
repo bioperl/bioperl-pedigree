@@ -105,8 +105,8 @@ ok (($person->get_Result('MKR90')->alleles)[1],'159');
 
 my $pedfmtio = new Bio::Pedigree::PedIO(-format => 'ped');
 
-$pedigree = $pedfmtio->read_pedigree(-pedfile => $io->catfile('/home1/allenday/C14_Comb_B.AFFB4.chr14.pre.txt'),
-				     -datfile => $io->catfile('/home1/allenday/C14_Comb.dat')
+$pedigree = $pedfmtio->read_pedigree(-pedfile => $io->catfile('t/data/C14_Comb_B.AFFB4.chr14.pre.txt'),
+				     -datfile => $io->catfile('t/data/C14_Comb.dat')
 				     );
 
 ($group) = $pedigree->each_Group;
