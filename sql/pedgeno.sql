@@ -86,8 +86,8 @@ CREATE TABLE allele_frequency (
 
 INSERT INTO markertype ( type, name, description ) VALUES ( 1, 'DX', 'Disease Marker');
 INSERT INTO markertype ( type, name, description ) VALUES ( 2, 'VNTR', 'VNTR Marker');
-INSERT INTO markertype ( type, name, description ) VALUES ( 3, 'Band', 'Banded Marker (microsattelite)');
-INSERT INTO markertype ( type, name, description ) VALUES ( 4, 'Numbered', 'NUmbered (Binned) Alleles' );
+INSERT INTO markertype ( type, name, description ) VALUES ( 3, 'Band', 'Banded Marker (microsatellite)');
+INSERT INTO markertype ( type, name, description ) VALUES ( 4, 'Numbered', 'Numbered (Binned) Alleles' );
 INSERT INTO markertype ( type, name, description ) VALUES ( 5, 'Quantitative', 'Quantitative Trait Markers' );
 INSERT INTO markertype ( type, name, description ) VALUES ( 6, 'RFLP', 'RFLP Marker');
 
