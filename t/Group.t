@@ -5,7 +5,7 @@ use strict;
 BEGIN {
     use vars qw($NUMTESTS $error) ;
     
-    $NUMTESTS = 17;
+    $NUMTESTS = 18;
     $error = 0;
     eval { require Test; };
     if( $@ ) {
@@ -13,16 +13,6 @@ BEGIN {
     }
     use Test;
     plan tests => $NUMTESTS;
-    eval { require Tie::IxHash;
-	   require Bio::Pedigree::Pedigree;
-	   require Bio::Pedigree::Group;
-	   require Bio::Pedigree::Result;
-	   require Bio::Pedigree::Person;
-       };
-    if( $@ ) {
-	print STDERR "skipping tests because Tie::IxHash is not installed\n";
-	$error = 1;
-    }
 }
 
 END { 
@@ -32,78 +22,85 @@ END {
 }
 
 if( $error == 1 ) { exit(0); }
+use Bio::Pedigree::Pedigree;
+use Bio::Pedigree::Group;
+use Bio::Pedigree::Person;
+use Bio::PopGen::Genotype;
 
-
-my @r = ( new Bio::Pedigree::Result(-name    => 'D1S234',
+my @r = ( new Bio::PopGen::Genotype(-marker_name    => 'D1S234',
 				    -alleles => [100,102] ),
-	  new Bio::Pedigree::Result(-name    => 'CFDX',
+	  new Bio::PopGen::Genotype(-marker_name    => 'CFDX',
 				    -alleles => ['A'] ),		
 	  );
 
 my @p;
  
-push @p, ( new Bio::Pedigree::Person(-person_id => 1,
-				     -father   => 0,
-				     -mother   => 0,
-				     -gender   => 'M',
-				     -results  => [@r]) );
+push @p, ( new Bio::Pedigree::Person(-person_id   => 1,
+				     -father_id   => 0,
+				     -mother_id   => 0,
+				     -gender      => 'M',
+				     -genotypes   => [@r]) );
 
-@r = ( new Bio::Pedigree::Result(-name    => 'D1S234',
+@r = ( new Bio::PopGen::Genotype(-marker_name    => 'D1S234',
 				 -alleles => [110,105] ),
-       new Bio::Pedigree::Result(-name    => 'CFDX',
+       new Bio::PopGen::Genotype(-marker_name    => 'CFDX',
 				 -alleles => ['U'] ),		
        );
-push @p, ( new Bio::Pedigree::Person(-person_id => 2,
-				     -father   => 0,
-				     -mother   => 0,
-				     -gender   => 'F',
-				     -results  => [@r]) );
+push @p, ( new Bio::Pedigree::Person(-person_id  => 2,
+				     -father_id  => 0,
+				     -mother_id  => 0,
+				     -gender     => 'F',
+				     -genotypes  => [@r]) );
 
-my @expected = qw(110 105);
-foreach my $allele ( $p[1]->get_Result('D1S234')->alleles ) {
+my @expected = qw(105 110 );
+my ($g) = $p[1]->get_Genotypes(-marker => 'D1S234');
+ok($g);
+foreach my $allele ( sort { $a <=> $b } 
+		     $g->get_Alleles ) {
     ok ($allele, shift @expected);
 }
 
-@r = ( new Bio::Pedigree::Result(-name    => 'D1S234',
+@r = ( new Bio::PopGen::Genotype(-marker_name    => 'D1S234',
 				 -alleles => [110,102] ),
-       new Bio::Pedigree::Result(-name    => 'CFDX',
+       new Bio::PopGen::Genotype(-marker_name    => 'CFDX',
 				 -alleles => ['A'] ),		
        );
 
 push @p, ( new Bio::Pedigree::Person(-person_id => 3,
-				     -father   => 1,
-				     -mother   => 2,
-				     -gender   => 'M',
-				     -results  => [@r] ));
+				     -father_id => 1,
+				     -mother_id => 2,
+				     -gender    => 'M',
+				     -genotypes => [@r] ));
 
-my $group = new Bio::Pedigree::Group( -people  => [@p],
-				      -center  => 'DUK',
-				      -groupid => 1,
-				      -type    => 'FAMILY',
-				      -desc    => 'simple example');
+my $group = new Bio::Pedigree::Group( -people      => [@p],
+				      -center      => 'DUK',
+				      -group_id    => 1,
+				      -type        => 'FAMILY',
+				      -description => 'simple example');
 
 ok ($group);
 ok ($group->isa('Bio::Pedigree::GroupI'));
 
 ok ($group->center, 'DUK');
-ok ($group->groupid, 1);
+ok ($group->group_id, 1);
 ok ($group->type, 'FAMILY');
 ok ($group->description, 'simple example');
 
 ok ($group->num_of_people, 3);
-ok (($group->each_Person)[0]->personid, 1);
+ok (($group->each_Person)[0]->person_id, 1);
 
 my $person = $group->get_Person(2);
 ok ($person);
-ok ($person->personid, 2);
+ok ($person->person_id, 2);
 
-@expected = qw(110 105);
-foreach my $allele ( $person->get_Result('D1S234')->alleles ) {
+@expected = qw(105 110);
+foreach my $allele ( sort { $a <=> $b } 
+		     $person->get_Genotypes('D1S234')->get_Alleles ) {
     ok ($allele, shift @expected);
 }
 
 $group->remove_Marker('D1S234');
-ok( ! $group->get_Person(2)->get_Result('D1S234'));
+ok( ! $group->get_Person(2)->get_Genotypes('D1S234'));
 
 ok ($group->remove_Person(3));
 ok ($group->num_of_people, 2);

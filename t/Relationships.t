@@ -53,5 +53,5 @@ ok ($child->patsib_id, '9002');
 ok ($child->patsib->person_id, '9002');
 my (@founders) = $group1->find_founders;
 ok ( @founders, 1);
-ok ($founders[0]->[0]->person_id, '2001');
-ok ($founders[0]->[1]->person_id, '2000');
+ok ($founders[0]->[0]->person_id, '2000');
+ok ($founders[0]->[1]->person_id, '2001');
