@@ -1,6 +1,6 @@
 # $Id$
 #
-# BioPerl module for Bio::Pedigree::PedIO::ped
+# BioPerl module for Bio::Pedigree::PedIO::linkage
 #
 # Cared for by Jason Stajich <jason@chg.mc.duke.edu>
 #
@@ -12,12 +12,13 @@
 
 =head1 NAME
 
-Bio::Pedigree::PedIO::ped - Ped format implementation of the PedIO
+Bio::Pedigree::PedIO::linkage - Ped format implementation of the PedIO
 system for reading linkage format pedigree files
 
 =head1 SYNOPSIS
 
-Give standard usage here
+    use Bio::Pedigree::PedIO;
+    my $pedio = new Bio::Pedigree::PedIO(-format => 'linkage');
 
 =head1 DESCRIPTION
 
@@ -58,7 +59,7 @@ Internal methods are usually preceded with a _
 
 # Let the code begin...
 
-package Bio::Pedigree::PedIO::ped;
+package Bio::Pedigree::PedIO::linkage;
 use vars qw(@ISA);
 use strict;
 use Bio::Pedigree;
@@ -104,8 +105,9 @@ sub read_pedigree{
    foreach ( 1..$markercount ) {
        while( defined($line = $self->_readline_dat) && $line !~ /\S/ ) {}
        $line =~ s/^\s+(\S+)/$1/;
+       $line =~ s/\#//g;
        my($type,$alleles, $name) = split(/\s+/,$line);       
-       $name =~ s/\#//;
+#       $name =~ s/\#//;
        my $marker;
        if( $type == 1 ) { # dx marker
 	   my (@frequencies) = split(/\s+/,$self->_readline_dat);
@@ -162,7 +164,7 @@ sub read_pedigree{
        }
        if( $fields[-1] =~ /ID=/ ) {
 	   ($displayid) = ((pop @fields) =~ /ID=(\S+)/);
-       }       
+       }              
        my ($groupid,$id,$father,$mother,$child,$patsib,
 	   $matsib,$gender,$proband,@results) = @fields;
        if( ! defined $groups{"$center\_$groupid"} ) {
@@ -176,7 +178,7 @@ sub read_pedigree{
 					      -mother   => $mother,
 					      -gender   => $gender,
 					      -child    => $child,
-					      -display  => $displayid,
+					      -displayid  => $displayid,
 					      -patsib   => $patsib,
 					      -matsib   => $matsib,
 					      -proband  => $proband);
@@ -281,4 +283,4 @@ sub write_pedigree {
     }
 }
 
-
+1;
