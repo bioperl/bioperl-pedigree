@@ -30,7 +30,7 @@ which there are results.
     foreach my $markername ( $pedigree->each_Marker('name') ) {
 	print "$markername\n";
     }
-    foreach my $group ( $pedigree->each_Group ) {
+    foreach my $group ( $pedigree->get_Groups ) {
 	print "group name is ", $group->center_groupid, "\n";
 	foreach my $person ( $pedigree->each_Person ) {
 	    print $person->person_id, " ", $person->gender, "\n";

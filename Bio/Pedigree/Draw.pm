@@ -166,7 +166,7 @@ sub draw {
 	if( $m->type eq 'DISEASE' ) { $marker = $m; last;}
     }
     my $renderengine = $rendermodule->new(-verbose => $self->verbose);
-    my @groups = $pedigree->each_Group;    
+    my @groups = $pedigree->get_Groups;    
     if( $groupindex ) {
         my $group = $groups[$groupindex];
         if( ! defined $group ) { 
