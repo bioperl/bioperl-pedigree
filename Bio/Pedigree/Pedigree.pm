@@ -436,7 +436,7 @@ sub name{
 sub calculate_all_relationships {
    my ($self,$warningtype) = @_;
    my $count = 0;
-   foreach my $group ( $self->each_Group ) {
+   foreach my $group ( $self->get_Groups ) {
        $count += $group->calculate_relationships($warningtype);
    }
    return $count;
