@@ -56,7 +56,7 @@ ok($variation->isa('Bio::Pedigree::Marker') &&
 ok( $variation->name, 'D1S123' );
 ok( $variation->description, 'Chrom 1 msat marker');
 ok( $variation->type, 'VARIATION');
-ok( $variation->chrom, 1);
+ok( $variation->chromosome, 1);
 ok( $variation->num_result_alleles, 2);
 ok( $variation->known_alleles, 6);
 ok( $variation->get_allele_frequency('130'), 0.0319);

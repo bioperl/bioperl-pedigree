@@ -50,11 +50,11 @@ unless ( $SKIPXML ) {
 
 my ($group1) = $pedigree->each_Group;
 my $person   = $group1->get_Person('0101');
-my $child    = $group1->get_Person($person->childid);
+my $child    = $group1->get_Person($person->child_id);
 ok (defined $child);
-ok ($child->patsibid, '9001');
-ok ($child->patsib->personid, '9001');
+ok ($child->patsib_id, '9001');
+ok ($child->patsib->person_id, '9001');
 my (@founders) = $group1->find_founders;
 ok ( @founders, 1);
-ok ($founders[0]->[0]->personid, '2000');
-ok ($founders[0]->[1]->personid, '2001');
+ok ($founders[0]->[0]->person_id, '2000');
+ok ($founders[0]->[1]->person_id, '2001');
