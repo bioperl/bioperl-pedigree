@@ -78,6 +78,7 @@ use vars qw(@ISA);
            ending   Y point
            width of line (in points)
            color of line (string)
+
 =cut
 
 sub draw_line {
@@ -99,6 +100,7 @@ sub draw_line {
            width of line (in points)
            color of line  (string)
            box fill color (string)
+
 =cut
 
 sub draw_box {
@@ -119,6 +121,7 @@ sub draw_box {
            width of line (in points)
            color of line   (string)
            oval fill color (string)
+
 =cut
 
 sub draw_oval {

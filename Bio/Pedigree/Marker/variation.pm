@@ -30,7 +30,6 @@ Bio::Pedigree::Marker::variation - module for managing variations (SNP, msat)
 					   -fwdflank => $seqfwd,
 					   -revflank => $seqrev
 );
- 
 
 =head1 DESCRIPTION
 

@@ -78,6 +78,7 @@ use vars qw(@ISA);
  Args    : group to draw
            marker which will determine affection status (if not defined 
            affection status will not be reported)
+
 =cut
 
 sub add_group_to_draw {

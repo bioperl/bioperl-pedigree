@@ -346,6 +346,8 @@ sub num_of_markers{
 
 =head2 Additional Data fields
 
+=cut
+
 =head2 date
 
  Title   : date
@@ -407,6 +409,8 @@ sub name{
 
 
 =head2 Algorithms and toplevel data access
+
+=cut
 
 =head2 calculate_all_relationships
 

@@ -214,6 +214,8 @@ sub type{
 
 =head2 GraphicsI implementation
 
+=cut
+
 =head2 draw_line
 
  Title   : draw_line

@@ -360,6 +360,8 @@ sub type {
 
 =head2 Algorithms
 
+=cut
+
 =head2 calculate_relationships
 
  Title   : calculate_relationships
