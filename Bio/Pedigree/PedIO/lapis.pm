@@ -97,6 +97,7 @@ use Bio::Pedigree::Result;
  Args    : -pedfile  => pedigree input location
            (-datfile is not needed for a lapis format)
            pedfile can be filenames or an input stream (GLOB)
+
 =cut
 
 sub read_pedigree {
