@@ -66,6 +66,7 @@ use strict;
 use Bio::Root::RootI;
 use Bio::Pedigree::PedIO;
 use XML::Writer;
+use XML::Twig;
 use IO;
 
 @ISA = qw(Bio::Pedigree::PedIO );
@@ -119,7 +120,6 @@ sub read_pedigree {
 sub write_pedigree {
     my ($self,@args) = @_;
     $self->_initialize_pedfh(@args);
-#    my $out = $self->_pedfh;
     my $outfh = new IO::File(">test.xml");
     my ($pedigree) = $self->_rearrange([qw(PEDIGREE)], @args);
     if( !defined $pedigree || !ref($pedigree) || 
@@ -187,24 +187,24 @@ sub write_pedigree {
 
     foreach my $group ( $pedigree->each_Group ) {
 	$writer->startTag("GROUP",
-			  "id" => $group->groupid,
-			  "center" => $group->center,
-			  "type" => uc $group->type,
+			  "id"          => $group->group_id,
+			  "center"      => $group->center,
+			  "type"        => uc $group->type,
 			  "description" => $group->description);	
 	foreach my $person ( $group->each_Person ) {
-	    my %persontags = ("id" => $person->personid,
-			      "displayid" => $person->displayid,
-			      "gender" => $person->gender,
-			      "father" => $person->fatherid,
-			      "mother" => $person->motherid);
-	    if( $person->childid ) {
-		$persontags{'child'} = $person->childid;
+	    my %persontags = ("id"        => $person->person_id,
+			      "displayid" => $person->display_id,
+			      "gender"    => $person->gender,
+			      "father"    => $person->father_id,
+			      "mother"    => $person->mother_id);
+	    if( $person->child_id ) {
+		$persontags{'child'} = $person->child_id;
 	    }
-	    if( $person->patsibid ) {
-		$persontags{'patsib'} = $person->patsibid;
+	    if( $person->patsib_id ) {
+		$persontags{'patsib'} = $person->patsib_id;
 	    }
-	    if( $person->matsibid ) {
-		$persontags{'matsib'} = $person->matsibid;
+	    if( $person->matsib_id ) {
+		$persontags{'matsib'} = $person->matsib_id;
 	    }
 	    $writer->startTag("PERSON", %persontags);
 			      

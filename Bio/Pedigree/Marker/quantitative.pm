@@ -19,10 +19,10 @@ marker data
 
     use Bio::Pedigree::Marker;
     my $marker = new Bio::Pedigree::Marker::quantitative
-    (-name       => $name,
-     -type       => $type,
-     -desc       => $desc,
-     -comment    => $comment
+    (-name              => $name,
+     -type              => $type,
+     -description       => $desc,
+     -comment           => $comment
      );
 
 =head1 DESCRIPTION
@@ -80,6 +80,8 @@ sub _initialize {
 
 =cut
 
+sub type { return 'QUANTITATIVE'}
+
 =head2 description
 
  Title   : description
@@ -120,6 +122,10 @@ sub num_result_alleles {
 
 =cut
 
+sub type_code { 
+  return 5;
+}
+
 =head1 Bio::Pedigree::Marker::quantitative specific methods 
 
 =head2 comment
@@ -133,12 +139,9 @@ sub num_result_alleles {
 =cut
 
 sub comment { 
-    my ($self, $value) = @_;
-    if( defined $value || ! defined $self->{'_comment'} ) {
-	$value = '' unless defined $value;
-	$self->{'_comment'} = $value;
-    }
-    return $self->{'_comment'};
+    my $self = shift;
+    return $self->{'_comment'} = shift if @_;
+    return $self->{'_comment'} || '';
 }
 
 __END__

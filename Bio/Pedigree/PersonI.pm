@@ -17,13 +17,14 @@ Bio::Pedigree::PersonI - Interface defining the methods for a Person in a Pedigr
 =head1 SYNOPSIS
 
     # get a PersonI object somehow
-    print "id is ", $person->personid, " father id is ", $person->fatherid, 
-          " motherid is ", $person->motherid, "\n";
+    print "id is ", $person->person_id, " father id is ", $person->father_id, 
+          " motherid is ", $person->mother_id, "\n";
 
 =head1 DESCRIPTION
 
 This interface defines the minimum methods required to have a Person
-in a Pedigree.
+in a Pedigree.  A PersonI is an extension of an Bio::PopGen::IndividualI 
+which can be used for more generic population genetic questions.
 
 =head1 FEEDBACK
 
@@ -66,56 +67,54 @@ package Bio::Pedigree::PersonI;
 use vars qw(@ISA);
 use strict;
 
-use Carp;
+use Bio::PopGen::IndividualI;
 
-sub _abstractDeath {
-  my $self = shift;
-  my $package = ref $self;
-  my $caller = (caller)[1];
-  
-  confess "Abstract method '$caller' defined in interface Bio::Pedigree::PersonI not implemented by pacakge $package. Not your fault - author of $package should be blamed!";
-}
+@ISA = qw(Bio::PopGen::IndividualI);
 
-=head2 personid
+=head2 person_id
 
- Title   : personid
- Usage   : my $pid = $person->personid;
- Function: Get/Set the id for a person
+ Title   : person_id
+ Usage   : my $pid = $person->person_id;
+ Function: Get/Set the individual id for a person
+           This should be unique in a pedigree and is typically
+           assigned when the Object is built.
  Returns : id for a person
  Args    : (optional) id to set for a person
 
 =cut
 
-sub personid{
-    $_[0]->_abstractDeath;
+sub person_id{
+    shift->throw_not_implemented();
 }
 
-=head2 fatherid
+=head2 father_id
 
- Title   : fatherid
- Usage   : my $fid = $person->fatherid;
- Function: Get/Set the father id for a person
+ Title   : father_id
+ Usage   : my $fid = $person->father_id;
+ Function: Get/Set the father id for a person (which should be
+           the same as the person_id for the father object)
  Returns : father id for a person
  Args    : (optional) father id to set for a person
 
 =cut
 
-sub fatherid{
-    $_[0]->_abstractDeath
+sub father_id{
+    shift->throw_not_implemented();
 }
 
-=head2 motherid
+=head2 mother_id
 
- Title   : motherid
- Usage   : my $fid = $person->motherid;
- Function: Get/Set the mother id for a person
+ Title   : mother_id
+ Usage   : my $fid = $person->mother_id;
+ Function: Get/Set the mother id for a person (which should be
+           the same as the person_id for the mother objec)
  Returns : mother id for a person
  Args    : (optional) mother id to set for a person
 
 =cut
 
 sub motherid{
-    $_[0]->_abstractDeath
+    shift->throw_not_implemented();
 }
 
 =head2 gender
@@ -123,91 +122,30 @@ sub motherid{
  Title   : gender
  Usage   : my $gender = $person->gender;
  Function: Get/Set gender for person
- Returns : gender ("M","F", "U")
+ Returns : gender ("M","F", "U") 
  Args    : (optional) gender code to store 
 
 =cut
 
 sub gender{
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
-=head2 displayid
+=head2 display_id
 
- Title   : displayid
- Usage   : my $dispylid = $person->displayid
+ Title   : display_id
+ Usage   : my $dispylid = $person->display_id
  Function: Returns the display id for a person which is more informative
-            than the personid (ie personid is typically the order in the family
-            while display_id might be the id code for individual like : 1001),
-            or perhaps a string.  It is expected to be unique within a 
-            family/group.
- Returns : string representing displayid
- Args    : (optional) string to set displayid to
+           than the person_id (display_id may be something like 1001),
+           or perhaps a string.  Like person_id it should be unique within a 
+           pedigree or group.
+ Returns : string representing display_id
+ Args    : (optional) string to set display_id to
 
 =cut
 
-sub displayid{
-    $_[0]->_abstractDeath;
-}
-
-=head2 add_Result
-
- Title   : add_Result
- Usage   : $person->add_Result($result,$overwrite);
- Function: Add a result for a person
- Returns : count of number of results or 0 if the addition failed
- Args    : result to add, 
-           boolean if existing results should be overwritten
- Throws  : Exception if a result with the name $result->name  already exists
-           unless $overwrite is true
-
-=cut
-
-sub add_Result{
-    $_[0]->_abstractDeath;
-}
-
-=head2 remove_Result
-
- Title   : remove_Result
- Usage   : $person->remove_Result($markername)
- Function: removes a result based on its name
- Returns : boolean if succeeded
- Args    : marker name to remove
-
-=cut
-
-sub remove_Result{
-    $_[0]->_abstractDeath;
-}
-
-=head2 each_Result
-
- Title   : each_Result
- Usage   : my @results = $person->each_Result;
- Function: returns the list of Results for a person
- Returns : Either the name of the variations or the list of Result objects
- Args    : (optional) 'name' to just get the list of variations
-                      that are contained for this person.
-
-=cut
-
-sub each_Result{
-    $_[0]->_abstractDeath;
-}
-
-=head2 get_Result
-
- Title   : get_Result
- Usage   : my $result = $person->get_Result($name);
- Function: Get a specific result for a person - or undef if not result exists
- Returns : Bio::Pedigree::ResultI object or null
- Args    : name of the result
-
-=cut
-
-sub get_Result{
-    $_[0]->_abstractDeath;
+sub display_id{
+    shift->throw_not_implemented();
 }
 
 =head2 num_of_results
@@ -221,55 +159,120 @@ sub get_Result{
 =cut
 
 sub num_of_results {
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
 =head2 Extra Person Fields
 
-These fields can be calculated for a group but need not be defined
-initially for a person unless already known.
+These fields can be calculated for a group/pedigree but need not be
+defined initially for a person unless known at object creation time
+(db load or parse time). .
 
-=head2 patsibid
+=head2 patsib_id
 
- Title   : patsibid
- Usage   : my $fid = $person->patsibid;
+ Title   : patsib_id
+ Usage   : my $fid = $person->patsib_id;
  Function: Get/Set the patsib id for a person
+           1st patsib id is a pointer to the next paternal sibling.
+           In the case of full sibs, matsib and patsib will be identical
+           but in half sib situations matsib and patsib will point to
+           differently chained objects.
+           This can either be set a object creation time
+           (parsing from file) or derived by walking down 
+           the pedigree.
  Returns : patsib id for a person
  Args    : (optional) patsib id to set for a person
 
 =cut
 
-sub patsibid{
-    $_[0]->_abstractDeath
+sub patsib_id{
+    shift->throw_not_implemented();
 }
 
-=head2 matsibid
+=head2 matsib_id
 
- Title   : matsibid
- Usage   : my $fid = $person->matsibid;
- Function: Get/Set the matsib id for a person
+ Title   : matsib_id
+ Usage   : my $fid = $person->matsib_id;
+ Function: Get/Set the 1st matsib id for a person
+           1st matsib id is a pointer to the next maternal sibling.
+           In the case of full sibs, matsib and patsib will be identical
+           but in half sib situations matsib and patsib will point to
+           differently chained objects.
+           This can either be set a object creation time
+           (parsing from file) or derived by walking down 
+           the pedigree.
+           This can either be set a object creation time
+           (parsing from file) or derived by walking down 
  Returns : matsib id for a person
  Args    : (optional) matsib id to set for a person
 
 =cut
 
-sub matsibid{
-    $_[0]->_abstractDeath
+sub matsib_id{
+    shift->throw_not_implemented();
 }
 
 
-=head2 childid
+=head2 child_id
 
- Title   : childid
- Usage   : my $fid = $person->childid;
- Function: Get/Set the child id for a person
+ Title   : child_id
+ Usage   : my $fid = $person->child_id;
+ Function: Get/Set the 1st child id for a person
+           1st child id is a pointer to the child which will have
+           a link to any other siblings via matsib or patsib ids 
+           depending on whether or not the they share the same 
+           set of parents.
+           This can either be set a object creation time
+           (parsing from file) or derived by walking down 
+           the pedigree.
  Returns : child id for a person
  Args    : (optional) child id to set for a person
 
 =cut
 
-sub childid{
-    $_[0]->_abstractDeath
+sub child_id{
+    shift->throw_not_implemented();
 }
+
+=head2 Inherited from Bio::PopGen::IndividualI
+
+The methods inherit from Bio::PopGen::IndividualI
+
+=head2 get_Genotypes
+
+ Title   : get_Genotypes
+ Usage   : my @genotypes = $ind->get_Genotypes(-marker => $markername);
+ Function: Get the genotypes for an individual, based on a criteria
+ Returns : Array of genotypes
+ Args    : either none (return all genotypes) or 
+           -marker => name of marker to return (exact match, case matters)
+
+
+=cut
+
+=head2 has_Marker
+
+ Title   : has_Marker
+ Usage   : if( $ind->has_Marker($name) ) {}
+ Function: Boolean test to see if an Individual has a genotype 
+           for a specific marker
+ Returns : Boolean (true or false)
+ Args    : String representing a marker name
+
+
+=cut
+
+=head2 get_marker_names
+
+ Title   : get_marker_names
+ Usage   : my @names = $individual->get_marker_names;
+ Function: Returns the list of known marker names
+ Returns : List of strings
+ Args    : none
+
+
+=cut
+
+
 
 1;

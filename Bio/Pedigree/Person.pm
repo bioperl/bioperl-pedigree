@@ -16,13 +16,23 @@ Bio::Pedigree::Person - An individual in a Family or Group
 
 =head1 SYNOPSIS
 
-Give standard usage here
+  use Bio::Pedigree::Person;
+  my $person = new Bio::Pedigree::Person(-person_id => $person_id,
+                                         -display_id=> $id,
+                                         -father_id => $father_id,
+                                         -mother_id => $mother_id,
+                                         -gender    => $gender);
 
+  print "father id ", $person->father_id, "\n";
+  print "mother id ", $person->mother_id, "\n";
+  print "gender is ", $person->gender, "\n";  
+
+  
 =head1 DESCRIPTION
 
 Represents an individual in a pedigree - stores the persons individual
 id, pointers to their parents. Sibling pointers can be derived.  Also
-stores their marker information.
+stores their genotype information.
 
 =head1 FEEDBACK
 
@@ -62,177 +72,196 @@ Internal methods are usually preceded with a _
 
 
 package Bio::Pedigree::Person;
-use vars qw(@ISA);
+use vars qw(@ISA %REQUIRED_FIELD);
 use strict;
+
 use Bio::Pedigree::PersonI;
-use Tie::IxHash;
-use Bio::Root::Root;
+use Bio::PopGen::Individual;
 
-@ISA = qw(Bio::Root::Root Bio::Pedigree::PersonI);
+@ISA = qw(Bio::PopGen::Individual Bio::Pedigree::PersonI);
+%REQUIRED_FIELD = ( 'person' => 1,
+		    'father' => 1,
+		    'mother' => 1,
+		    'child'  => 0,
+		    'patsib' => 0,
+		    'matsib' => 0);
 
-
-# explictly using fatherid and motherid instead of mother/father to 
+# explictly using father_id and mother_id instead of mother/father to 
 # allow possibility of mother/father object references later on.
 
 =head2 new
 
  Title   : new
- Usage   : my $person = new Bio::Pedigree::Person(-pid       => $pid,
-						  -personid  => $id,
-						  -fatherid  => $fid,
-						  -motherid  => $mid,
-						  -gender    => $gender
-						  -displayid => $display );
+ Usage   : my $person = new Bio::Pedigree::Person(-person_id  => $id,
+						  -father_id  => $fid,
+						  -mother_id  => $mid,
+						  -gender     => $gender
+						  -display_id => $displayid );
  Function: creates a new person
  Returns : Bio::Pedigree::Person object
  Args    : All fields are required unless specified as optional
-            -pid       => (optional) internal id (usually starting with 1)
-            -personid  => id for the person (within this family)
-                         This is only unique within a family and is typically
-                         the order this person occupies in the family file.
-            -father    => id for the father (numeric pointer essentially)
-            -mother    => id for the mother (numeric pointer essentially)
-            -gender    => ['M','F', 'U'] or ['1', '2', '0' ]
-            -displayid => (optional) the display id for this person (label) 
+            -person_id  => id for the person (within this family)
+                           This is only unique within a family and is typically
+                           the order this person occupies in the family file.
+            -gender     => ['M','F', 'U'] or ['1', '2', '0' ] 
+            -display_id => (optional) the display id for this person (label) 
                           useful for internal coding schemes, e.g. '1001' 
-                          This will be the same as personid unless explictly
+                          This will be the same as person_id unless explictly
                           set.
-            -childid   => (optional) child pointer id
-            -patsib    => (optional) paternal sib pointer id
-            -matsib    => (optional) maternal sib pointer id
-            -proband   => (optional) boolean if person is proband
-            -results   => (optional) array ref of results to initialize this
+            -proband    => (optional) boolean if person is proband
+            -genotypes  => (optional) array ref of results to initialize this
                           person with.
+
+              ANY of the XX_id or XX can be used,
+              father,mother OR father_id,mother_id must be supplied
+            -father     => for the father (numeric pointer essentially)
+            -mother     => id for the mother (numeric pointer essentially)
+            -child      => (optional) child object
+            -patsib     => (optional) paternal sib object
+            -matsib     => (optional) maternal sib object
+
+               OR
+
+            -father_id  => id for the father (numeric pointer essentially)
+            -mother_id  => id for the mother (numeric pointer essentially)
+            -child_id   => (optional) child pointer id
+            -patsib_id  => (optional) paternal sib pointer id
+            -matsib_id  => (optional) maternal sib pointer id
+    
 
 =cut
 
 sub new {
   my($class,@args) = @_;
+
+  # the superclass will take care of the -genotypes and unique_id fields
   my $self = $class->SUPER::new(@args);
 
   # initialize some containers
   $self->{'_results'} = {}; # results are hashed by name
-  tie %{$self->{'_results'}}, "Tie::IxHash"; 
   # parse the arguments
-  my ($personid, $fatherid, $motherid, $gender, 
-      $displayid, $child,$patsib,$matsib, $proband,
-      $results, $pid ) = $self->_rearrange([qw(PERSONID FATHER 
-					       MOTHER GENDER 
-					       DISPLAYID CHILD 
-					       PATSIB MATSIB PROBAND
-					       RESULTS PID)], @args);
+  my (%ids,%rels, $personid,$gender, $displayid,$proband);
+  
+  ($personid, 
+   $rels{'father'}, $ids{'father'}, 
+   $rels{'mother'}, $ids{'mother'}, 
+   $rels{'child'},  $ids{'child'},
+   $rels{'patsib'}, $ids{'patsib'},
+   $rels{'matsib'}, $ids{'matsib'},
+   $gender, $displayid,
+   $proband) = $self->_rearrange([qw(PERSON_ID 
+				     FATHER FATHER_ID 
+				     MOTHER MOTHER_ID 
+				     CHILD  CHILD_ID
+				     MATSIB MATSIB_ID
+				     PATSIB PATSIB_ID
+				     GENDER 
+				     DISPLAY_ID 
+				     PROBAND
+				     )], @args);
+  
+  
   if( ! defined $personid ) {
       $self->throw("Must specify a personid");
-  } elsif( ! defined $fatherid ) {
-      $self->throw("Must specify a fatherid");
-  } elsif( ! defined $motherid ) {
-      $self->throw("Must specify a motherid");
-  } elsif( ! defined $gender ) {
-      $self->throw("Must specify a gender");
-  } 
-
-  $self->personid($personid);
-  $self->fatherid($fatherid);
-  $self->motherid($motherid);
-  $self->gender($gender);
-  # optional fields
-  defined $displayid && $self->displayid($displayid);
-  defined $child     && $self->childid($child);
-  defined $patsib    && $self->patsibid($patsib);
-  defined $matsib    && $self->matsibid($matsib);
-  defined $proband   && $self->proband($proband);
-  defined $pid       && $self->pid($pid);
-  if( defined $results ) {
-      if( ref($results) !~ /array/i ) {
-	  $self->warn("Trying to initialize a person with a results list ($results) which is not an array ref"); 
-      } else { 
-	  foreach my $result ( @$results ) {
-	      $self->add_Result($result,1);
+  } else { $self->person_id($personid) }
+  
+  foreach my $rel ( qw(father mother child patsib matsib ) ) {
+      if( $rels{$rel} ) { 
+	  my $pobj = $rels{$rel};
+	  if( ! ref($pobj) ||
+	      ! $pobj->isa('Bio::Pedigree::PersonI') ) {
+	      $self->throw("Must supply a valid Person object or an individual id when initializing the $rel field for a $class, got a $pobj");
+	  } elsif( defined $ids{$rel}  && $pobj->person_id ne $ids{$rel}) {
+	      $self->throw("You suppliced a $rel\_id and a $rel obj when initializing $class and the id for the $rel object (".$pobj->person_id.") does not match $ids{$rel}");
 	  }
-      }
+	  $self->relative($pobj);
+      } elsif( defined $ids{$rel} ) {
+	  $self->relative_id($rel,$ids{$rel});
+      } else {
+	  # relative ids will default to 0 
+	  $self->relative_id($rel, 0);
+      } 
   }
+
+  if( ! defined $gender ) {
+      $self->throw("Must specify a gender when initializing a $class");
+  } else { $self->gender($gender) }
+
+
+  defined $displayid && $self->display_id($displayid);
+  $self->proband($proband) if defined $proband;  
   return $self;
 }
 
-=head2 personid
 
- Title   : personid
- Usage   : my $pid = $person->personid;
+=head2 person_id
+
+ Title   : person_id
+ Usage   : my $person = $person->person_id;
  Function: Get/Set the id for a person
  Returns : id for a person
  Args    : (optional) id to set for a person
 
 =cut
 
-sub personid{
+sub person_id{
     my ($self,$value) = @_;
     if( defined $value ) {
-	$self->{'_personid'} = $value;
+	$self->{'_person_id'} = $value;
     }
-    return $self->{'_personid'};
+    return $self->{'_person_id'};
 }
 
-=head2 fatherid
+=head2 father_id
 
- Title   : fatherid
- Usage   : my $fid = $person->fatherid;
- Function: Get/Set the father id for a person
+ Title   : father_id
+ Usage   : my $fid = $person->father_id;
+ Function: Get/Set the father id for a person 
  Returns : father id for a person
  Args    : (optional) father id to set for a person
 
 =cut
 
-sub fatherid{
-    my ($self,$value) = @_;
-    if( defined $value ) {
-	$self->{'_fatherid'} = $value;
-    }
-    return $self->{'_fatherid'};
+sub father_id{
+    shift->relative_id('father', @_);
 }
 
 =head2 father
 
  Title   : father
  Usage   : $obj->father($newval)
- Function: 
+ Function: Get/Set the father object reference (for caching)
  Returns : value of father
  Args    : newvalue (optional)
 
 
 =cut
 
-sub father{
-   my ($obj,$value) = @_;
-   if( defined $value) {
-      $obj->{'father'} = $value;
-    }
-    return $obj->{'father'};
+# for caching the object once it has been set
 
+sub father{
+    shift->relative('father', @_);
 }
 
-=head2 motherid
+=head2 mother_id
 
- Title   : motherid
- Usage   : my $fid = $person->motherid;
+ Title   : mother_id
+ Usage   : my $fid = $person->mother_id;
  Function: Get/Set the mother id for a person
  Returns : mother id for a person
  Args    : (optional) mother id to set for a person
 
 =cut
 
-sub motherid{
-    my ($self,$value) = @_;
-    if( defined $value ) {
-	$self->{'_motherid'} = $value;
-    }
-    return $self->{'_motherid'};
+sub mother_id{
+    shift->relative_id('mother', @_);
 }
 
 =head2 mother
 
  Title   : mother
  Usage   : $obj->mother($newval)
- Function: 
+ Function: Get/Set the mother object reference (for caching)
  Returns : value of mother
  Args    : newvalue (optional)
 
@@ -240,12 +269,7 @@ sub motherid{
 =cut
 
 sub mother{
-   my ($obj,$value) = @_;
-   if( defined $value) {
-      $obj->{'mother'} = $value;
-    }
-    return $obj->{'mother'};
-
+    shift->relative('mother', @_);
 }
 
 =head2 gender
@@ -271,10 +295,10 @@ sub gender{
     return $self->{'_gender'};
 }
 
-=head2 displayid
+=head2 display_id
 
- Title   : displayid
- Usage   : my $dispylid = $person->displayid
+ Title   : display_id
+ Usage   : my $dispylid = $person->display_id
  Function: Returns the display id for a person which is more informative
             than the personid (ie personid is typically the order in the family
             while display_id might be the id code for individual like : 1001),
@@ -285,98 +309,262 @@ sub gender{
 
 =cut
 
-sub displayid{
+sub display_id{
     my ($self,$value) = @_;
-    if( defined $value || ! defined $self->{'_displayid'} ) {	
-	$value = $self->personid unless defined $value;
-	$self->{'_displayid'} = $value;
+    if( defined $value || ! defined $self->{'_display_id'} ) {	
+	$value = $self->person_id unless defined $value;
+	$self->{'_display_id'} = $value;
     }
-    return $self->{'_displayid'};
+    return $self->{'_display_id'};
 }
 
-=head2 add_Result
+=head2 Extra Person Fields
 
- Title   : add_Result
- Usage   : $person->add_Result($result,$overwrite);
- Function: Add a result for a person
- Returns : count of number of results or 0 if the addition failed
- Args    : result to add, 
-           boolean if existing results should be overwritten
- Throws  : Exception if a result with the name $result->name  already exists
-           unless $overwrite is true
+These fields can be calculated for a group/pedigree but need not be
+defined initially for a person unless known at object creation time
+(db load or parse time). .
+
+
+=head2 patsib_id
+
+ Title   : patsib_id
+ Usage   : my $fid = $person->patsib_id;
+ Function: Get/Set the patsib id for a person
+           1st patsib id is a pointer to the next paternal sibling.
+           In the case of full sibs, matsib and patsib will be identical
+           but in half sib situations matsib and patsib will point to
+           differently chained objects.
+           This can either be set a object creation time
+           (parsing from file) or derived by walking down 
+           the pedigree.
+ Returns : patsib id for a person
+ Args    : (optional) patsib id to set for a person
 
 =cut
 
-sub add_Result{
-    my ($self, $result,$overwrite) = @_;
-    if( ! $result || !ref($result) || 
-	! $result->isa('Bio::Pedigree::ResultI') ) {
-	$self->warn("Trying to add a result $result which is not a Bio::Pedigree::ResultI");
-	return 0;
-    }
-    my $name = uc $result->name;
-    if( ! $overwrite && defined $self->{'_results'}->{$name} ) {
-	$self->warn("Trying to overwrite an already added result for Marker $name and overwrite is turned off.  Will not replace the existing one");
-	return 0;
-    } else { 
-	$self->{'_results'}->{$name} = $result;
-    }
-    return keys %{$self->{'_results'}};
+sub patsib_id{
+    shift->relative_id('patsib',@_);
 }
 
-=head2 remove_Result
+=head2 matsib_id
 
- Title   : remove_Result
- Usage   : $person->remove_Result($markername)
- Function: removes a result based on its name
- Returns : boolean if succeeded
- Args    : marker name to remove
+ Title   : matsib_id
+ Usage   : my $fid = $person->matsib_id;
+ Function: Get/Set the 1st matsib id for a person
+           1st matsib id is a pointer to the next maternal sibling.
+           In the case of full sibs, matsib and patsib will be identical
+           but in half sib situations matsib and patsib will point to
+           differently chained objects.
+           This can either be set a object creation time
+           (parsing from file) or derived by walking down 
+           the pedigree.
+           This can either be set a object creation time
+           (parsing from file) or derived by walking down 
+ Returns : matsib id for a person
+ Args    : (optional) matsib id to set for a person
 
 =cut
 
-sub remove_Result{
-    my ($self,$name) = @_;
-    $name = uc $name;
-    return 0 if( ! defined $name || ! defined $self->{'_results'}->{$name});
-    delete $self->{'_results'}->{$name};
-    return 1;
+sub matsib_id{
+    shift->relative_id('matsib',@_);
 }
 
-=head2 each_Result
 
- Title   : each_Result
- Usage   : my @results = $person->each_Result;
- Function: returns the list of Results for a person
- Returns : Either the name of the markers or the list of Result objects
- Args    : (optional) 'name' to just get the list of variations
-                      that are contained for this person.
+=head2 child_id
+
+ Title   : child_id
+ Usage   : my $fid = $person->child_id;
+ Function: Get/Set the 1st child id for a person
+           1st child id is a pointer to the child which will have
+           a link to any other siblings via matsib or patsib ids 
+           depending on whether or not the they share the same 
+           set of parents.
+           This can either be set a object creation time
+           (parsing from file) or derived by walking down 
+           the pedigree.
+ Returns : child id for a person
+ Args    : (optional) child id to set for a person
 
 =cut
 
-sub each_Result{
-    my ($self, $name) = @_;
-    my (@vals,$bool,$val);
-    $bool = ( $name && $name eq 'name' );
-    while( my($name,$result) = each %{$self->{'_results'}} ) {
-	push @vals, ( $bool ) ? $name : $result;
+sub child_id{
+    shift->relative_id('child',@_);
+}
+
+
+
+=head2 patsib
+
+ Title   : patsib
+ Usage   : my $patsibid = $person->patsib_id;
+ Function: Get/Set the patsib obj for a person
+           1st patsib id is a pointer to the next paternal sibling.
+           In the case of full sibs, matsib and patsib will be identical
+           but in half sib situations matsib and patsib will point to
+           differently chained objects.
+           This can either be set a object creation time
+           (parsing from file) or derived by walking down 
+           the pedigree.
+ Returns : patsib for a person
+ Args    : (optional) patsib to set for a person
+
+=cut
+
+sub patsib{
+    shift->relative('patsib',@_);
+}
+
+=head2 matsib
+
+ Title   : matsib
+ Usage   : my $fid = $person->matsib;
+ Function: Get/Set the 1st matsib for a person
+           1st matsib id is a pointer to the next maternal sibling.
+           In the case of full sibs, matsib and patsib will be identical
+           but in half sib situations matsib and patsib will point to
+           differently chained objects.
+           This can either be set a object creation time
+           (parsing from file) or derived by walking down 
+           the pedigree.
+           This can either be set a object creation time
+           (parsing from file) or derived by walking down 
+ Returns : matsib for a person
+ Args    : (optional) matsib to set for a person
+
+=cut
+
+sub matsib{
+    shift->relative('matsib',@_);
+}
+
+
+=head2 child
+
+ Title   : child
+ Usage   : my $fid = $person->child;
+ Function: Get/Set the 1st child for a person
+           1st child id is a pointer to the child which will have
+           a link to any other siblings via matsib or patsib ids 
+           depending on whether or not the they share the same 
+           set of parents.
+           This can either be set a object creation time
+           (parsing from file) or derived by walking down 
+           the pedigree.
+ Returns : child for a person
+ Args    : (optional) child id to set for a person
+
+=cut
+
+sub child{
+    shift->relative('child',@_);
+}
+
+=head2 proband
+
+ Title   : proband
+ Usage   : $obj->proband($newval)
+ Function: Get/Set the proband status
+ Returns : value of proband
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub proband{
+    my $self = shift;
+    return $self->{'_proband'} = shift if @_;
+    return $self->{'_proband'};
+}
+
+sub get_last_sib {
+    my ($self,$parent) = @_;
+    
+    if( $parent->person_id == $self->father_id ) {
+	if( $self->patsib ) {
+	    return $self->patsib->get_last_sib($parent);
+	} else { 
+	    return $self;
+	}
+    } elsif( $parent->person_id == $self->mother_id ) {
+	if( $self->matsib ) {
+	    return $self->matsib->get_last_sib($parent);
+	} else { 
+	    return $self;
+	}
+    } else { return undef }
+}
+
+
+=head2 relative_id
+
+ Title   : relative_id
+ Usage   : my $id = $person->relative_id('mother');
+ Function: Simple programatic way to get access to 
+           father/mother/child/patsib/matsib fields
+ Returns : Unique identifier of the relative
+ Args    : relationship name (one of 'mother', 'father', 'child', 
+			             'patsib', 'matsib')
+           (optional) value to store for id
+
+
+=cut
+
+
+# todo at some point - verify that relative and relative id
+# can't get out of sync
+
+sub relative_id{
+   my $self = shift;
+   # no forced validation of 'relationship'
+   my $rel  = shift;
+   return unless defined $rel;
+   $rel = lc($rel);
+   if( @_) {
+       return $self->{"_$rel\_id"} = shift;
+   }
+   return $self->{"_$rel\_id"};
+}
+
+
+=head2 relative
+
+ Title   : relative
+ Usage   : my $id = $person->relative_id('mother');
+ Function: Simple programatic way to get access to 
+           father/mother/child/patsib/matsib objects
+ Returns : Reference to relative object
+ Args    : relationship name (one of 'mother', 'father', 'child', 
+			             'patsib', 'matsib')
+           (optional) value to store for object
+
+
+=cut
+
+sub relative {
+    my $self = shift;
+    my $rel = shift;
+
+    # no forced validation of 'relationship'
+
+    return unless defined $rel;
+    # force lowercase
+    $rel = lc($rel);
+
+    if( @_ ) {
+	my $obj = shift;
+	if( ref($obj) &&
+	    $obj->isa('Bio::Pedigree::PersonI') ) {
+	    $self->{"_$rel"} = $obj;
+	    $self->{"_$rel\_id"} = $obj->person_id;
+	} else { 
+	    $self->throw("Need to provide a valid Bio::Pedigree::PersonI to $rel") }
     }
-    return @vals;
+    return $self->{'_$rel'};
 }
 
-=head2 get_Result
 
- Title   : get_Result
- Usage   : my $result = $person->get_Result($name);
- Function: Get a specific result for a person - or undef if not result exists
- Returns : Bio::Pedigree::ResultI object or null
- Args    : name of the result
+=head2 Inherited from Bio::PopGen::Individual
 
-=cut
-
-sub get_Result{
-    my($self,$name) = @_;
-    return $self->{'_results'}->{$name};
-}
 
 =head2 num_of_results
 
@@ -388,182 +576,73 @@ sub get_Result{
 
 =cut
 
-sub num_of_results {
-    my($self) = @_;
-    return scalar keys %{$self->{'_results'}};
-}
+=head2 add_Genotype
 
-=head2 Extra Person Fields
-
-These fields can be calculated for a group but need not be defined
-initially for a person unless already known.
-
-=head2 patsibid
-
- Title   : patsibid
- Usage   : my $fid = $person->patsibid;
- Function: Get/Set the patsib id for a person
- Returns : patsib id for a person
- Args    : (optional) patsib id to set for a person
-
-=cut
-
-sub patsibid{
-    my ($self, $id) = @_;
-    if(defined $id) {
-	$self->{'_patsibid'} = $id;
-    }
-    return $self->{'_patsibid'};
-}
-
-=head2 patsib
-
- Title   : patsib
- Usage   : $obj->patsib($newval)
- Function: 
- Returns : value of patsib
- Args    : newvalue (optional)
+ Title   : add_Genotype
+ Usage   : $individual->add_Genotype
+ Function: add a genotype value
+ Returns : count of the number of genotypes associated with this individual
+ Args    : $genotype - Bio::PopGen::GenotypeI object containing the alleles for
+                       a marker
 
 
 =cut
 
-sub patsib{
-   my ($obj,$value) = @_;
-   if( defined $value) {
-      $obj->{'patsib'} = $value;
-    }
-    return $obj->{'patsib'};
-}
+=head2 reset_Genotypes
 
-=head2 matsibid
-
- Title   : matsibid
- Usage   : my $fid = $person->matsibid;
- Function: Get/Set the matsib id for a person
- Returns : matsib id for a person
- Args    : (optional) matsib id to set for a person
-
-=cut
-
-sub matsibid{
-    my ($self, $id) = @_;
-    if(defined $id) {
-	$self->{'_matsibid'} = $id;
-    }
-    return $self->{'_matsibid'};
-}
-
-=head2 matsib
-
- Title   : matsib
- Usage   : $obj->matsib($newval)
- Function: 
- Returns : value of matsib
- Args    : newvalue (optional)
+ Title   : reset_Genotypes
+ Usage   : $individual->reset_Genotypes;
+ Function: Reset the genotypes stored for this individual
+ Returns : none
+ Args    : none
 
 
 =cut
 
-sub matsib{
-   my ($obj,$value) = @_;
-   if( defined $value) {
-      $obj->{'matsib'} = $value;
-    }
-    return $obj->{'matsib'};
-}
+=head2 remove_Genotype
 
-=head2 childid
-
- Title   : childid
- Usage   : my $fid = $person->childid;
- Function: Get/Set the child id for a person
- Returns : child id for a person
- Args    : (optional) child id to set for a person
-
-=cut
-
-sub childid{
-    my ($self, $id) = @_;
-    if(defined $id) {
-	$self->{'_childid'} = $id;
-    }
-    return $self->{'_childid'};
-}
-
-=head2 child
-
- Title   : child
- Usage   : $obj->child($newval)
- Function: 
- Returns : value of child
- Args    : newvalue (optional)
+ Title   : remove_Genotype
+ Usage   : $individual->remove_Genotype(@names)
+ Function: Removes the genotypes for the requested markers
+ Returns : none
+ Args    : Names of markers 
 
 
 =cut
 
-sub child{
-   my ($obj,$value) = @_;
-   if( defined $value) {
-      $obj->{'child'} = $value;
-    }
-    return $obj->{'child'};
-}
+=head2 get_Genotypes
 
-=head2 pid
-
- Title   : pid
- Usage   : $obj->pid($newval)
- Function: 
- Example : 
- Returns : value of pid
- Args    : newvalue (optional)
+ Title   : get_Genotypes
+ Usage   : my @genotypes = $ind->get_Genotypes(-marker => $markername);
+ Function: Get the genotypes for an individual, based on a criteria
+ Returns : Array of genotypes
+ Args    : either none (return all genotypes) or 
+           -marker => name of marker to return (exact match, case matters)
 
 
 =cut
 
-sub pid{
-   my ($obj,$value) = @_;
-   if( defined $value) {
-      $obj->{'_pid'} = $value;
-    }
-    return $obj->{'_pid'};
-}
+=head2 has_Marker
 
-=head2 proband
-
- Title   : proband
- Usage   : $obj->proband($newval)
- Function: 
- Returns : value of proband
- Args    : newvalue (optional)
+ Title   : has_Marker
+ Usage   : if( $ind->has_Marker($name) ) {}
+ Function: Boolean test to see if an Individual has a genotype 
+           for a specific marker
+ Returns : Boolean (true or false)
+ Args    : String representing a marker name
 
 
 =cut
 
-sub proband{
-   my ($obj,$value) = @_;
-   if( defined $value) {
-      $obj->{'_proband'} = $value;
-    }
-    return $obj->{'_proband'};
+=head2 get_marker_names
 
-}
+ Title   : get_marker_names
+ Usage   : my @names = $individual->get_marker_names;
+ Function: Returns the list of known marker names
+ Returns : List of strings
+ Args    : none
 
-sub get_last_sib {
-    my ($self,$parent) = @_;
-    
-    if( $parent->personid == $self->fatherid ) {
-	if( $self->patsib ) {
-	    return $self->patsib->get_last_sib($parent);
-	} else { 
-	    return $self;
-	}
-    } elsif( $parent->personid == $self->motherid ) {
-	if( $self->matsib ) {
-	    return $self->matsib->get_last_sib($parent);
-	} else { 
-	    return $self;
-	}
-    } else { return undef }
-}
+
+=cut
+
 1;

@@ -29,7 +29,7 @@ This module manages Disease Marker information.
 
 =head1 AUTHOR - Jason Stajich
 
-Email jason@bioperl.org
+Email jason-at-bioperl-dot-org
 
 =head1 APPENDIX
 
@@ -41,10 +41,15 @@ methods. Internal methods are usually preceded with a _
 # Let the code begin...
 
 package Bio::Pedigree::Marker::disease;
-use vars qw(@ISA);
+use vars qw(@ISA $LOADED_IXHASH);
 use strict;
 use Bio::Pedigree::Marker;
-use Tie::IxHash;
+
+$LOADED_IXHASH = 0;
+eval { 
+    require Tie::IxHash;
+    $LOADED_IXHASH = 1;
+};
 
 @ISA = qw(Bio::Pedigree::Marker);
 
@@ -65,7 +70,9 @@ use Tie::IxHash;
 sub _initialize { 
     my ($self, @args) = @_;
     $self->{'_liab_classes'} = {};
-    tie %{ $self->{'_liab_classes'} }, 'Tie::IxHash';
+    if( $LOADED_IXHASH ) {
+	tie %{ $self->{'_liab_classes'} }, 'Tie::IxHash';
+    }
     # chained _initialize call to include behaviour of superclass
     $self->SUPER::_initialize(@args);
     my ($liab_classes, $freqs, 
@@ -157,6 +164,8 @@ sub num_result_alleles {
  Args    : none
 
 =cut
+
+sub type_code { return 1 }
 
 =head1 Bio::Pedigree::Marker::disease specific methods 
 

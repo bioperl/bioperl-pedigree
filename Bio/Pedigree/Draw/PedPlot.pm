@@ -370,9 +370,9 @@ sub _draw_children {
     my ($self, $father,$mother,$x,$y) = @_;
     
     assert( $father->gender eq 'M', 
-	    sprintf('Father gender was not "M" (%s)', $father->personid) );
+	    sprintf('Father gender was not "M" (%s)', $father->person_id) );
     assert( $mother->gender eq 'F', 
-	    sprintf('Mother gender was not "F" (%s)',$mother->personid ) );
+	    sprintf('Mother gender was not "F" (%s)',$mother->person_id ) );
     
     my ($nextx,$nexty);
 
@@ -381,16 +381,16 @@ sub _draw_children {
 
     assert($first_p_child, 
 	   sprintf("Father (%s) did not have a valid child pointer",
-		   $father->personid) );
+		   $father->person_id) );
     assert($first_m_child, 
 	   sprintf("Mother (%s) did not have a valid child pointer",
-		   $mother->personid) );
+		   $mother->person_id) );
 
-    if( $first_p_child->personid != $first_m_child->personid ) {
+    if( $first_p_child->person_id != $first_m_child->person_id ) {
 	# multi-married
 
-	printf "multimarried couple (%s,%s)\n",$father->personid, 
-	$mother->personid;  
+	printf "multimarried couple (%s,%s)\n",$father->person_id, 
+	$mother->person_id;  
     }
     my $child = $first_p_child;
     my $firstchild;
@@ -461,7 +461,7 @@ sub _draw_person {
 	my ($class,$result) = ($person->get_Result($marker)->alleles);	
 	$affstatus = ( defined $result && $result eq $code );
     }
-    $self->debug("Drawing ".$person->personid."\n");
+    $self->debug("Drawing ".$person->person_id."\n");
     if( $person->gender eq 'M' ) {
 	$self->add_Command( new Bio::Pedigree::Draw::BoxCommand
 			    (-startx    => $x,

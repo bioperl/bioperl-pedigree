@@ -69,66 +69,9 @@ package Bio::Pedigree::MarkerI;
 use strict;
 use Bio::Root::RootI;
 use vars qw(@ISA);
-@ISA = qw(Bio::Root::RootI);
 
-=head2 display_name
-
- Title   : display_name
- Usage   : my $name = $marker->display_name;
- Function: Get/Set Marker Display name
- Returns : string
- Args    : (optional) string to set
-
-=cut
-
-sub display_name{
-    shift->throw_not_implemented();
-}
-
-=head2 name
-
- Title   : name
- Usage   : my $name = $marker->name;
- Function: Get/Set Marker name
- Returns : string
- Args    : (optional) string to set
-
-
-=cut
-
-sub name{
-    shift->throw_not_implemented();
-}
-
-=head2 type
-
- Title   : type
- Usage   : my $type = $marker->type;
- Function: Get marker type - valid types are defined by 
-           implementing classes
- Returns : type value
- Args    : none
-
-=cut
-
-sub type{
-    shift->throw_not_implemented();
-}
-
-=head2 description
-
- Title   : description
- Usage   : my $desc = $marker->description();
- Function: Get/Set description for a marker
- Returns : Description string 
- Args    : (optional) string to set as description
-
-=cut
-
-sub description{
-    shift->throw_not_implemented();
-}
-
+use Bio::PopGen::MarkerI;
+@ISA = qw(Bio::PopGen::MarkerI);
 
 
 =head2 num_of_result_alleles
@@ -159,5 +102,133 @@ sub num_of_result_alleles{
 sub type_code {
     shift->throw_not_implemented();
 }
+
+=head2 annotation
+
+ Title   : annotation
+ Usage   : $obj->annotation($seq_obj)
+ Function: retrieve the attached annotation object
+ Returns : Bio::AnnotationCollectionI or none;
+
+See L<Bio::AnnotationCollectionI> and L<Bio::Annotation::Collection>
+for more information. This method comes through extension from
+L<Bio::AnnotatableI>.
+
+
+=cut
+
+
+sub annotation{
+   my ($self,@args) = @_;
+
+}
+
+
+=head2 get_Alleles
+
+ Title   : get_Alleles
+ Usage   : my @alleles = $marker->get_Alleles();
+ Function: Get the available marker alleles if they are known and stored
+ Returns : Array of strings
+ Args    : none
+
+
+=cut
+
+sub get_Alleles{
+   my ($self) = @_;
+   $self->throw_not_implemented();
+}
+
+
+=head2 get_Allele_Frequencies
+
+ Title   : get_Allele_Frequencies
+ Usage   : my %allele_freqs = $marker->get_Allele_Frequencies;
+ Function: Get the alleles and their frequency (set relative to
+           a given population - you may want to create different
+           markers with the same name for different populations
+           with this current implementation
+ Returns : Associative array where keys are the names of the alleles
+ Args    : none
+
+
+=cut
+
+sub get_Allele_Frequencies{
+   my ($self) = @_;
+    $self->throw_not_implemented();
+}
+
+=head2 num_of_result_alleles
+
+ Title   : num_of_result_alleles
+ Usage   : my $num_alleles_for_result = $marker->num_of_result_alleles;
+ Function: returns the number of result alleles for a marker - entirely
+           dependant on the marker type.  This is so we can code code 
+           phenotypic data as markers as well (such as Age of Onset, 
+	   Age of Exam) by basically extending the ped/linkage format
+           for this..
+            
+ Returns : Either '1' or '2' in almost all cases
+ Args    : none
+
+=cut
+
+=head2 Inherited from Bio::PopGen::MarkerI
+
+=head2 display_name
+
+ Title   : display_name
+ Usage   : my $name = $marker->display_name;
+ Function: Get/Set Marker Display name
+ Returns : string
+ Args    : (optional) string to set
+
+=cut
+
+=head2 name
+
+ Title   : name
+ Usage   : my $name = $marker->name;
+ Function: Get/Set Marker name
+ Returns : string
+ Args    : (optional) string to set
+
+
+=cut
+
+=head2 type
+
+ Title   : type
+ Usage   : my $type = $marker->type;
+ Function: Get marker type - valid types are defined by 
+           implementing classes
+ Returns : type value
+ Args    : none
+
+=cut
+
+=head2 description
+
+ Title   : description
+ Usage   : my $desc = $marker->description();
+ Function: Get/Set description for a marker
+ Returns : Description string 
+ Args    : (optional) string to set as description
+
+=cut
+
+=head2 unique_id
+
+ Title   : unique_id
+ Usage   : my $id = $marker->unique_id;
+ Function: Get the unique marker ID
+ Returns : unique ID string
+ Args    : [optional ] string
+
+
+=cut
+
 
 1;

@@ -12,23 +12,23 @@
 
 =head1 NAME
 
-Bio::Pedigree::Marker::variation - module for managing variations (SNP, msat) 
+Bio::Pedigree::Marker::variation - module for managing variations (SNP, microsat) 
 
 =head1 SYNOPSIS
 
     use Bio::Pedigree::Marker;
     my $variation = new Bio::Pedigree::Marker(-name => 'D1S123',
-					   -desc => 'Chrom 1 marker',
-					   -type => 'Variation',
-					   -chrom => 1,
-					   -alleles => { 130  => 0.0319,
-							 132  => 0.1596,
-							 136  => 0.0851,
-							 138  => 0.2128,
-							 140  => 0.0532,
-						     },
-					   -fwdflank => $seqfwd,
-					   -revflank => $seqrev
+					      -description => 'Chrom 1 marker',
+					      -type => 'Variation',
+					      -chrom => 1,
+					      -alleles => { 130  => 0.0319,
+							    132  => 0.1596,
+							    136  => 0.0851,
+							    138  => 0.2128,
+							    140  => 0.0532,
+						          },
+					      -fwdflank => $seqfwd,
+					      -revflank => $seqrev
 );
 
 =head1 DESCRIPTION
@@ -37,7 +37,7 @@ This module manages Lapis Variation (Allele) Marker information.
 
 =head1 AUTHOR - Jason Stajich
 
-Email jason@bioperl.org
+Email jasona-at-bioperl-dot-org
 
 =head1 APPENDIX
 
@@ -99,26 +99,20 @@ sub _initialize {
 
     $self->{'_alleles'} = {};
 
-    my ($name,$alleles, $desc, $chrom, 
-	$fwd,$rev) = $self->_rearrange([qw(NAME ALLELES
-					   DESC CHROM FWDFLANK
+    my ($alleles,$chrom, 
+	$fwd,$rev) = $self->_rearrange([qw(ALLELES
+					   CHROM FWDFLANK
 					   REVFLANK)], @args);
-    if( ! defined $name ) {
-	$self->throw("Did not specify a valid name for the marker");
-    }
-    $self->name($name);
-
     if( ! defined $alleles || ref($alleles) !~ /hash/i ) {
 	$self->throw("Did not specify alleles as a hash ref");
     }
     while( my($allele, $freq) = each  %{$alleles} ) {
-	$self->add_allele( $allele, $freq);
+	$self->add_Allele_Frequency( $allele, $freq);
     }
     # optional fields
     $fwd     && $self->upstream_flanking_seq($fwd);
     $rev     && $self->dnstream_flanking_seq($rev);
-    $chrom   && $self->chrom($chrom);
-    $desc    && $self->description($desc);
+    $chrom   && $self->chromosome($chrom);
 
     return;
 }
@@ -188,8 +182,10 @@ sub num_result_alleles {
 
 =cut
 
-=head1 Bio::Pedigree::Marker::variation specific methods 
+sub type_code { return 3 }
 
+
+=head1 Bio::Pedigree::Marker::variation specific methods 
 
 =head2 upstream_flanking_seq
 
@@ -249,17 +245,21 @@ sub dnstream_flanking_seq{
     return $self->{'_dnstrmflank'};
 }
 
-=head2 chrom
 
- Title   : chrom
- Usage   : my $chrom = $marker->chrom();
- Function: Get/Set chrom
+# Okay this should be changed - only Mapped Markers should have a chromosome
+# field
+
+=head2 chromosome
+
+ Title   : chromosome
+ Usage   : my $chrom = $marker->chromosome();
+ Function: Get/Set chromosome
  Returns : chrom (string)
  Args    : [optional] chrom value to set
 
 =cut
 
-sub chrom {
+sub chromosome {
     my ($self, $value) = @_;
     if( defined $value ) {
 	$self->{'_chrom'} = $value;
@@ -267,74 +267,6 @@ sub chrom {
     return $self->{'_chrom'};
 }
 
-
-=head2 known_alleles
-
- Title   : known_alleles
- Usage   : @alleles = $marker->known_alleles
- Function: Get list of the known alleles 
- Returns : @array of known alleles
- Args    : none
-
-=cut 
-
-sub known_alleles {
-    my($self) = @_;
-    my @a = sort { $b <=> $a || $b cmp $a } keys %{ $self->{'_alleles'} } ;
-    return @a;
-}
-
-=head2 add_allele
-
- Title   : add_allele
- Usage   : $marker->add_allele($name, $freq);
- Function: Adds an allele and frequency for a Marker
- Returns : none
- Args    : name  => Allele name 
-           freq  => (optional) allele frequency     
-
-=cut
-
-sub add_allele{
-    my ($self,$name,$freq) = @_;
-    return 0 if( !defined $name || ! defined $freq); 
-    $self->{'_alleles'}->{$name} = $freq;
-    return scalar keys %{ $self->{'_alleles'} };
-}
-
-
-=head2 remove_allele
-
- Title   : remove_allele
- Usage   : $marker->remove_allele($name);
- Function: Remove an allele from a Marker
- Returns : none
- Args    : name -> allele name
-
-=cut
-
-sub remove_allele {
-    my ($self,$name) = @_;
-    delete $self->{'_alleles'}->{$name};
-}
-
-
-=head2 get_allele_frequency
-
- Title   : get_allele_frequency
- Usage   : my $freq = $marker->get_allele_frequency('171');
- Function: Returns the allele frequency for a specific allele, 
-           undef if allele is not known
- Returns : frequency of an allele
- Args    : allele name
-
-=cut
-
-sub get_allele_frequency{
-    my ($self,$name) = @_;
-    # will return undef if $name DNE
-    return $self->{'_alleles'}->{$name};
-}
 
 __END__
 

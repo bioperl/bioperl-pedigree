@@ -1,3 +1,4 @@
+
 # -*-Perl-*-
 
 use strict;
@@ -17,13 +18,10 @@ BEGIN {
     $NUMTESTS = 48;
     plan tests => $NUMTESTS;
 
-    eval { require Tie::IxHash;
-	   require Bio::Pedigree::PedIO; };
+    eval { require Bio::Pedigree::PedIO; };
     if( $@ ) {
-	print STDERR "No Tie::IxHash installed skipping tests\n";
-	$error = 1;
+	print STDERR $@;
     }
-
     eval { require XML::Writer };
     if( $@ ) {
 	$SKIPXML = 1;
@@ -32,7 +30,7 @@ BEGIN {
 
 END {
     for ($Test::ntest..$NUMTESTS) {
-	skip("unable to run all of the Draw tests, check your GD installation",1);
+#	skip("unable to run all of the PedIO tests, check your XML installation",1);
     }
 }
 
@@ -53,7 +51,7 @@ ok ($pedigree);
 ok ($pedigree->num_of_groups, 7);
 ok ($pedigree->num_of_markers, 5);
 
-my @markers = $pedigree->each_Marker;
+my @markers = sort { $a->name cmp $b->name } $pedigree->each_Marker;
 ok ( (shift @markers)->name, 'AAA-REC');
 ok ( (shift @markers)->name, 'D1S123');
 ok ( (shift @markers)->name, 'D1S234');
@@ -61,7 +59,7 @@ ok ( (shift @markers)->name, 'D1S987');
 ok ( (shift @markers)->name, 'MKR90');
 ok ( ! @markers );
 
-my @groups = $pedigree->each_Group;
+my @groups = sort { $a->center_groupid cmp $b->center_groupid} $pedigree->each_Group;
 
 ok( ( shift @groups)->center_groupid, 'XXX 2200');
 ok( ( shift @groups)->center_groupid, 'XXX 2201');
@@ -74,34 +72,32 @@ ok( ( shift @groups)->center_groupid, 'XXX 2206');
 my $group = $pedigree->get_Group('XXX 2201');
 ok ($group);
 
-my $person = $group->get_Person(2001);
+my $person = $group->get_Person('0102');
 
-ok ( $person);
-ok ( $person->pid, 4);
-ok ( $person->personid, '2001');
-ok ( $person->fatherid, '3000');
-ok ( $person->motherid, '3001');
-ok ( ! defined $person->childid);
-ok ( $person->gender, 'F');
-ok ( $person->each_Result, 1);
+ok ( $person );
+ok ( $person->person_id, '0102');
+ok ( $person->father_id, '1000');
+ok ( $person->mother_id, '1001');
+ok ( ! $person->child_id);
+ok ( $person->gender, 'M');
+ok ( $person->get_marker_names, 5);
 
-ok (($person->get_Result('AAA-REC')->alleles)[0],'N');
+ok (($person->get_Genotypes('D1S123')->get_Alleles)[0],'148');
 
 $person = $group->get_Person('0001');
 ok ( $person);
-ok ( $person->pid, 10);
-ok ( $person->personid, '0001');
-ok ( $person->fatherid, '1000');
-ok ( $person->motherid, '1001');
-ok ( ! defined $person->childid );
+ok ( $person->person_id, '0001');
+ok ( $person->father_id, '1000');
+ok ( $person->mother_id, '1001');
+ok ( ! $person->child_id );
 ok ( $person->gender, 'M');
-ok ( $person->each_Result, 5);
+ok ( $person->get_marker_names, 5);
 
-ok (($person->get_Result('AAA-REC')->alleles)[0],'A');
-ok (($person->get_Result('D1S123')->alleles)[0],'152');
-ok (($person->get_Result('D1S123')->alleles)[1],'148');
-ok (($person->get_Result('D1S987')->alleles)[0],'134');
-ok (($person->get_Result('MKR90')->alleles)[1],'159');
+ok (($person->get_Genotypes('AAA-REC')->get_Alleles)[0],'A');
+ok (($person->get_Genotypes('D1S123')->get_Alleles)[0],'152');
+ok (($person->get_Genotypes('D1S123')->get_Alleles)[1],'148');
+ok (($person->get_Genotypes('D1S987')->get_Alleles)[0],'134');
+ok (($person->get_Genotypes('MKR90')->get_Alleles)[1],'159');
 
 my $pedfmtio = new Bio::Pedigree::PedIO(-format => 'linkage');
 
@@ -117,13 +113,13 @@ ok ($group);
 ok ($group->center_groupid, "CTR 8888");
 ok ($group->each_Person, 11);
 $person = $group->get_Person(8);
-ok ($person->fatherid, 5);
+ok ($person->father_id, 5);
 ok ( ! defined $person->father );
 
 $group->calculate_relationships;
 ok ( $person->father );
 $person = $group->get_Person(8);
-ok ( $person->father->personid, 5);
+ok ( $person->father->person_id, 5);
 
 $lapisio->write_pedigree(-pedigree => $pedigree,
 			 -pedfile  => \*STDOUT);

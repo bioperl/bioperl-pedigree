@@ -33,7 +33,7 @@ which there are results.
     foreach my $group ( $pedigree->each_Group ) {
 	print "group name is ", $group->center_groupid, "\n";
 	foreach my $person ( $pedigree->each_Person ) {
-	    print $person->personid, " ", $person->gender, "\n";
+	    print $person->person_id, " ", $person->gender, "\n";
 	}
     }
 
@@ -87,11 +87,17 @@ Internal methods are usually preceded with a _
 
 
 package Bio::Pedigree::Pedigree;
-use vars qw(@ISA);
+use vars qw(@ISA $LOADED_IXHASH);
 use strict;
 
 use Bio::Root::Root;
-use Tie::IxHash;
+$LOADED_IXHASH = 0;
+eval { 
+    require Tie::IxHash;
+    $LOADED_IXHASH =1;
+};
+
+
 use Bio::Pedigree::Group;
 use Bio::Pedigree::Marker;
 use POSIX;
@@ -120,14 +126,16 @@ sub new {
   $self->{'_groups'} = {};
   $self->{'_markers'} = {};
   # allows elements to be retrieved in order they were inserted
-  tie %{$self->{'_groups'}}, "Tie::IxHash";
-  tie %{$self->{'_markers'}}, "Tie::IxHash";
-
-  my ($groups, $markers, $name, $date, $comment) = $self->_rearrange([qw(GROUPS 
-								 MARKERS 
-								 NAME
-								 DATE 
-								 COMMENT)], @args);
+  if( $LOADED_IXHASH ) {
+      tie %{$self->{'_groups'}}, "Tie::IxHash";
+      tie %{$self->{'_markers'}}, "Tie::IxHash";
+  }
+  my ($groups, $markers, $name, $date, $comment) = 
+      $self->_rearrange([qw(GROUPS 
+			    MARKERS 
+			    NAME
+			    DATE 
+			    COMMENT)], @args);
   if( defined $groups ) {
       if( ref($groups) !~ /array/i ) {
 	  $self->throw("Trying to initialize Bio::Pedigree::Pedigree object with groups ($groups) which is not an array reference");
@@ -314,7 +322,7 @@ sub each_Marker{
 
  Title   : get_Marker
  Usage   : my $marker = $pedigree->get_Marker($name);
- Function:
+ Function: 
  Example :
  Returns : 
  Args    :

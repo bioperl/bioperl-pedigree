@@ -18,17 +18,17 @@ Bio::Pedigree::Group - An object for managing lists of people who are related in
 
     use Bio::Pedigree::Group;
     use Bio::Pedigree::Person;
-    my $group = new Bio::Pedgigree::Group( -groupid => 1,
+    my $group = new Bio::Pedgigree::Group( -group_id => 1,
 					   -center  => 'DUK',
 					   -desc    => 'example family');
-    my $person = new Bio::Pedigree::Person( -personid => 1,
+    my $person = new Bio::Pedigree::Person( -person_id => 1,
 					    -gender   => 'M',
 					    -father   => 0,
 					    -mother   => 0 );
     $group->add_Person($person);
 
     foreach my $p ( $group->each_Person ) {
-	print "person id is ", $p->personid, "\n";
+	print "person id is ", $p->person_id, "\n";
     }
 
 =head1 DESCRIPTION
@@ -76,38 +76,40 @@ Internal methods are usually preceded with a _
 
 
 package Bio::Pedigree::Group;
-use vars qw(@ISA $DEFAULTTYPE);
+use vars qw(@ISA $DEFAULTTYPE $LOADED_IXHASH);
 use strict;
 
 use Bio::Pedigree::GroupI;
-use Tie::IxHash;
-use Bio::Root::Root;
+use Bio::PopGen::Population;
 
-@ISA = qw(Bio::Root::Root Bio::Pedigree::GroupI);
+@ISA = qw(Bio::PopGen::Population Bio::Pedigree::GroupI);
 
-BEGIN { 
-    $DEFAULTTYPE = 'FAMILY';
-}
+$DEFAULTTYPE = 'FAMILY';
+
+$LOADED_IXHASH = 0;
+eval {
+    require Tie::IxHash;
+    $LOADED_IXHASH = 1;
+};
 
 =head2 new
 
  Title   : new
- Usage   : my $group = new Bio::Pedigree::Group( -groupid => 1,
-						 -center  => 'DUK',
-						 -desc    => 'example family',
-						 -people  => \@people);
+ Usage   : my $group = new Bio::Pedigree::Group( -group_id       => 1,
+						 -center         => 'DUK',
+						 -description    => 'example family',
+						 -people         => \@people);
  Function: creates a new group
  Returns : Bio::Pedigree::Group object
  Args    : All fields are required unless specified as optional
-            -groupid  => group id for the group 
-                        (typically assigned by a research center so 
-			 groupid is not unique, however center + groupid 
-			 should be unique!)
-            -center   => research center responsible for this family
-            -desc     => (optional) description
-            -type     => 'FAMILY' or 'GROUP' - 'FAMILY' by default
-            -people   => (optional) initial people arrayref to initialize
-                         object with
+            -group_id    => group id for the group 
+                            (typically assigned by a research center so 
+			    group_id is not unique, however center + groupid 
+			    should be unique!)
+            -center      => research center responsible for this family
+            -description => (optional) description
+            -type        => 'FAMILY' or 'GROUP' - 'FAMILY' by default
+            -individuals => array ref of individuals (optional)
 
 =cut
 
@@ -117,28 +119,35 @@ sub new {
   my $self = $class->SUPER::new(@args);
   
   $self->{'_people'} = {};
-  tie %{$self->{'_people'}}, "Tie::IxHash";
+  if( $LOADED_IXHASH ) {
+      tie %{$self->{'_people'}}, "Tie::IxHash";
+  }
+  my ($groupid, $center, $type) = $self->_rearrange([ qw(GROUP_ID 
+							 CENTER 
+							 TYPE)] , @args);
 
-  my ($groupid, $center, $desc, $type,
-      $people) = $self->_rearrange([ qw(GROUPID CENTER DESC TYPE
-				      PEOPLE)] , @args);
   if( !defined $groupid || ! defined $center ) {
       $self->throw("Must defined groupid and center to initialize a $class object");
   }
-  $self->groupid($groupid);
+  $self->group_id($groupid);
   $self->center ($center);
   $self->type($type || $DEFAULTTYPE);
-  $desc && $self->description($desc);
-  if( defined $people ) {
-      if( ref($people) !~ /array/i ) {
-	  $self->warn("Trying to initialize a the people list with $people which is not an ArrayRef");
-      } else { 
-	  foreach my $person ( @$people ) {
-	      $self->add_Person($person,1);
-	  }
-      }
-  }
   return $self;
+}
+
+=head2 num_of_people
+
+ Title   : num_of_people
+ Usage   : my $count = $group->num_of_people;
+ Function: returns the number of people currently in a group
+ Returns : integer
+ Args    : none
+
+=cut
+
+sub num_of_people{
+    my ($self) = @_;
+    return scalar values %{ $self->{'_people'} };
 }
 
 =head2 add_Person
@@ -156,25 +165,7 @@ sub new {
 =cut
 
 sub add_Person{
-    my ($self, $person,$overwrite) = @_;
-    if( ! $person || !ref($person) || 
-	! $person->isa('Bio::Pedigree::PersonI') ) {
-	$self->warn("Trying to add a person $person which is not a Bio::Pedigree::PersonI");
-	return 0;
-    }
-    my $personid = $person->personid;
-    if( ! defined  $personid ) {
-	$self->throw("No person id, assigning a pid for them");	
-    } elsif( $personid < 0 ) {
-	$self->throw("Invalid person id!")
-    }    
-    if( ! $overwrite && defined $self->{'_people'}->{$personid} ) {
-	$self->warn("Trying to overwrite already seen $personid with a new person and overwrite is turned off.  Will not replace the existing value");
-	return 0;    
-    }
-    if( !defined $person->pid ) { $person->pid($self->num_of_people + 1); }
-    $self->{'_people'}->{$personid} = $person;
-    return $self->num_of_people;
+    return shift->add_Individual(@_)
 }
 
 =head2 remove_Person
@@ -194,31 +185,9 @@ sub add_Person{
 =cut
 
 sub remove_Person{
-    my ($self, $pid) = @_;
-    if( ref($pid) && $pid->isa('Bio::Pedigree::PersonI') ) {
-	$pid = $pid->personid;
-    }
-
-    return 0 if( ! defined $pid || !defined $self->{'_people'}->{$pid} );
-
-    delete $self->{'_people'}->{$pid};
-    return 1;
+    return shift->remove_Individual(@_);
 }
 
-=head2 num_of_people
-
- Title   : num_of_people
- Usage   : my $count = $group->num_of_people;
- Function: returns the number of people currently in a group
- Returns : integer
- Args    : none
-
-=cut
-
-sub num_of_people{
-    my ($self) = @_;
-    return scalar values %{ $self->{'_people'} };
-}
 
 =head2 each_Person
 
@@ -237,7 +206,12 @@ sub num_of_people{
 
 sub each_Person{
     my ($self,$id) = @_;
-    return ( $id && $id eq 'id' ) ? keys %{ $self->{'_people'} } : values %{ $self->{'_people'} };
+    my @inds = $self->get_Individuals();
+    my @ids;
+    if( $id ) { 
+	return map { $_->unique_id } @inds;
+    } 
+    return @inds;
 }
 
 =head2 get_Person
@@ -247,13 +221,17 @@ sub each_Person{
  Function: returns the person object based on a specific person id
  Returns : Bio::Pedigree::PersonI object or undef if that id does not exist
  Args    : person id for person to retrieve
-
 =cut
 
 sub get_Person{
-    my ($self, $id) = @_;
-    return undef if( ! defined $id || $id < 0 );
-    return $self->{'_people'}->{$id};
+   my ($self,$id) = @_;
+   my @inds = @{$self->{'_individuals'}};
+   return unless @inds;
+   foreach my $p ( @inds ) { 
+       if( $p->person_id eq $id ) { 
+	   return $p;
+       }
+   }
 }
 
 =head2 remove_Marker
@@ -298,10 +276,10 @@ sub center{
     return $self->{'_center'};
 }
 
-=head2 groupid
+=head2 group_id
 
- Title   : groupid
- Usage   : my $id = $group->groupid()
+ Title   : group_id
+ Usage   : my $id = $group->group_id()
  Function: Get/Set Group ID number for this group
  Returns : integer
  Args    : integer (optional) integer to set the group id to
@@ -310,30 +288,10 @@ sub center{
 
 =cut
 
-sub groupid {
-    my ($self,$value) = @_;
-    if( defined $value ) {
-	$self->{'_groupid'} = $value;
-    }
+sub group_id {
+    my $self = shift;
+    $self->{'_groupid'} = shift if @_;
     return $self->{'_groupid'};
-}
-
-=head2 description
-
- Title   : description
- Usage   : my $description = $group->description; #or
- Function: Get/Set Group description value
- Returns : string 
- Args    : string (optional) string to set the group description to
-
-=cut
-
-sub description {
-    my ($self,$value) = @_;
-    if( defined $value ) {
-	$self->{'_description'} = $value;
-    }
-    return $self->{'_description'} || '';
 }
 
 =head2 type
@@ -351,10 +309,8 @@ sub description {
 =cut
 
 sub type {
-    my ($self,$value) = @_;
-    if( defined $value ) {
-	$self->{'_type'} = $value;
-    }
+    my $self = shift;
+    $self->{'_type'} = shift if @_;
     return $self->{'_type'};
 }
 
@@ -424,7 +380,7 @@ sub find_founders {
     foreach my $person ( $self->each_Person ){
 	if( $person->fatherid == 0 ) {
 	    if( $person->motherid != 0 ) {
-		$self->throw("Person ". $person->personid. " has is malformed, they have a mother pointer of ". $person->motherid. " while their fatherid is 0");
+		$self->throw("Person ". $person->person_id. " has is malformed, they have a mother pointer of ". $person->motherid. " while their fatherid is 0");
 	    }
 	    push @{$orphans{$person->childid}}, $person, 
 	}
@@ -433,15 +389,15 @@ sub find_founders {
     my @founders;
     while( my($child,$parents) = each %orphans ) {
 	if( @$parents > 2 ) {
-	    $self->throw("Sanity Check failed - a child -- $child -- has more than 2 parents!\nParent Ids are: ". join(',', map { $_->personid } @$parents ));
+	    $self->throw("Sanity Check failed - a child -- $child -- has more than 2 parents!\nParent Ids are: ". join(',', map { $_->person_id } @$parents ));
 	} elsif( @$parents == 1 ) { next; }
 	$parents = [ sort { $a->gender eq 'M' ? 1 : 0 } @$parents]; 
 	if( $parents->[0]->gender eq $parents->[1]->gender ) {
 	    $self->warn("Parents gender is not opposite!\n".
 			sprintf("Gender was for %s: %s and for %s: %s",
-				$parents->[0]->personid, 
+				$parents->[0]->person_id, 
 				$parents->[0]->gender,
-				$parents->[1]->personid, 
+				$parents->[1]->person_id, 
 				$parents->[1]->gender));
 	    next;
 	}
@@ -501,7 +457,7 @@ sub _add_child {
 	my $firstchild = $group->get_Person($parent->childid);
 	$parent->child($firstchild);
 	if( ! defined $firstchild ) {
-	    $group->throw("Person ". $parent->personid. 
+	    $group->throw("Person ". $parent->person_id. 
 			  " has reference to 1st child as ". 
 			  $parent->childid . " which does not exist in this group");
 	}
@@ -514,7 +470,7 @@ sub _add_child {
 
 sub _add_sib {
     my ($group,$sib,$id, $paternalsib) = @_;
-    return 0 if( ! defined $sib || $sib->personid == $id );
+    return 0 if( ! defined $sib || $sib->person_id == $id );
     my $sibname = ( $paternalsib ) ? 'patsibid' : 'matsibid';
     my $sibobj = ( $paternalsib ) ? 'patsib' : 'matsib';
     if( ! $sib->$sibname() ) {
@@ -528,7 +484,7 @@ sub _add_sib {
 	return 0 if ( $sib->$sibname() == $id);
 	
 	if( ! defined $firstsib) {
-	    $group->throw("Person ". $sib->personid . 
+	    $group->throw("Person ". $sib->person_id . 
 			  "has a reference to 1st $sibname as ".
 			  $sib->$sibname() . " which does not exist in this group");
 	}	

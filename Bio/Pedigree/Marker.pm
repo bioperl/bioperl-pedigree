@@ -12,24 +12,26 @@
 
 =head1 NAME
 
-Bio::Pedigree::Marker - generic module for managing lapis Marker data
+Bio::Pedigree::Marker - generic module for managing Marker data
 
 =head1 SYNOPSIS
 
     use Bio::Pedigree::Marker;
-    my $marker = new Bio::Pedigree::Marker(-name       => $name,
-					   -type       => $type,
-					   -desc       => $desc
-					   -display    => $display_name
+    my $marker = new Bio::Pedigree::Marker(-name        => $name,
+					   -type        => $type,
+					   -description => $desc
+					   -display     => $display_name
 					);
 
 =head1 DESCRIPTION
 
-This module manages Pedigree Marker information.
+This module manages Pedigree Marker information.  This was originally
+written to support the LAPIS system at Duke Center for Human Genetics.
+It has been expanded to be general enough for TSC usage as well.
 
 =head1 AUTHOR - Jason Stajich
 
-Email jason@bioperl.org
+Email jason-at-bioperl-dot-org
 
 =head1 APPENDIX
 
@@ -43,13 +45,13 @@ methods. Internal methods are usually preceded with a _
 package Bio::Pedigree::Marker;
 use vars qw(@ISA %MARKERTYPES);
 use strict;
-use Bio::Root::Root;
+use Bio::PopGen::Marker;
 use Bio::Pedigree::MarkerI;
-# Bio::Root::RootI is part of the bioperl project
-# this module provides basic error handling and 
-# argument handling 
 
-@ISA = qw(Bio::Root::Root Bio::Pedigree::MarkerI );
+@ISA = qw(Bio::PopGen::Marker Bio::Pedigree::MarkerI );
+
+
+# move this to implementation specific stuff
 
 BEGIN { 
     %MARKERTYPES = ( 'DISEASE'         => 1,
@@ -68,15 +70,16 @@ BEGIN {
  Usage   : my $marker = new Bio::Pedigree::Marker(-name => $name);
  Function: creates a new Bio::Pedigree::MarkerI object
  Returns : CHG::Lapis::Marker
- Args    : accepted arguments (in hash form)
-           -name => 'name'
-           -desc => 'desc here',
-           -type => 'DX',
+ Args    : -name          => [string] marker name
+           -description   => [string] marker description
+           -type          => [string] marker type
+           -unique_id     => (optional) [string/int] unique id
+           -allele_freq   => (optional) [hash ref] allele frequencies 
+ 
 
 =cut
 
 sub new {
-    # standard new call..
     my($caller,@args) = @_;
     
     my ($class) = ref($caller) || $caller;
@@ -89,33 +92,14 @@ sub new {
 	@param{ map { lc $_ } keys %param } = values %param; # lowercase keys
 	my $type = $param{'-type'} || $param{'-TYPE'} || die("Did not specify a TYPE value for a new Marker");
 	$type = lc($type);
-	if( defined($type = &_load_format_module($type) ) ) {
+	if( defined($type = $class->_load_format_module($type) ) ) {
 	    $self = new $type(@args);
 	}
     }
     return $self;
 }
 
-sub _initialize {
-    my ($self, @args) = @_;
-    my ($name, $type, $desc, 
-	$display) = $self->SUPER::_rearrange([qw(NAME 
-						 TYPE DESC 
-						 DISPLAY)],
-					     @args);
-    if( ! defined $name ){
-	$self->throw("Must have defined NAME to create a marker"); 
-    } elsif( ! defined $type ) {
-	$self->throw("Must have defined TYPE to create a marker");
-    }
-    $display = $name unless defined $display;
-    $self->type( uc $type);
-    $self->name($name);        
-    $self->display_name($display );
-
-    $desc && $self->description($desc);
-    return;
-}
+sub _initialize {}
 
 =head2 name
 
@@ -204,8 +188,7 @@ sub display_name{
 =cut
 
 sub type_code {
-    my ($self) = @_;
-    return $MARKERTYPES{uc($self->type)} || 0;
+    return $MARKERTYPES{uc(shift->type)} || 0;
 }
 
 =head2 num_result_alleles
@@ -236,28 +219,24 @@ sub num_result_alleles {
 =cut
 
 sub _load_format_module {
-  my ($format) = @_;
-  my ($module, $load, $m);
-
-  $module = "_<Bio/Pedigree/Marker/$format.pm";
-  $load = "Bio/Pedigree/Marker/$format.pm";
-  my $nm = "Bio::Pedigree::Marker::$format";
-  return $nm if $main::{$module};
-  eval {
-    require $load;
+  my ($self, $format) = @_;
+  my $ok;
+  my $module = "Bio::Pedigree::Marker::".$format;
+  eval { 
+      $ok = $self->_load_module($module);
+      $ok = $module;
   };
   if ( $@ ) {
-    print STDERR <<END;
-$load: $format cannot be found 
-Exception $@ 
- For more information about the Bio::Pedigree::Marker system 
- please see the Pedigree::Marker docs.  This includes ways of 
- checking for formats at compile time, not run time.
+      print STDERR <<END;
+$self: $format cannot be found
+Exception $@
+For more information about the Bio::Pedigree::Marker system please see
+the Bio::Pedigree::Marker docs.  This includes ways of checking for
+formats at compile time, not run time
 END
-  ;
-    return undef;
+;
   }
-  return $nm;
+  return $ok;      
 }
 
 __END__

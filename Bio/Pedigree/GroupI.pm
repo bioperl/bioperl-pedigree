@@ -17,7 +17,7 @@ Bio::Pedigree::GroupI - Group Interface definition
 =head1 SYNOPSIS
 
     # get a Group object somehow
-    print "group is ", $group->center, " ", $group->groupid, "\n";
+    print "group is ", $group->center, " ", $group->group_id, "\n";
 
 =head1 DESCRIPTION
 
@@ -63,110 +63,10 @@ Internal methods are usually preceded with a _
 
 package Bio::Pedigree::GroupI;
 use strict;
-use Bio::Root::RootI;
+use Bio::PopGen::PopulationI;
 use vars qw(@ISA);
-@ISA = qw(Bio::Root::RootI);
 
-=head2 add_Person
-
- Title   : add_Person
- Usage   : $group->add_Person($person, $overwrite);
- Function: adds a person to the group
- Returns : count of number of people, 
- Args    : person    - Bio::Pedigree::PersonI object to add
-           overwrite - overwrite the person currently stored for a specific
-                       id.
- Throws  : Exception if a person with the id $person->id  already exists
-           unless $overwrite is true
-
-=cut
-
-sub add_Person{
-    shift->throw_not_implemented();
-}
-
-=head2 remove_Person
-
- Title   : remove_Person
- Usage   : $group->remove_Person($person->id );
- Function: Removes a person with the specified id
- Returns : boolean if person was removed, false if no person
-           exists for that id
-
-           This method currently will not check if 
-           person is depended upon (ie a parent of an existing child)
-           and does not update the child\'s parent ids.  Maybe it should!
-
- Args    : id of person to remove.
-
-=cut
-
-sub remove_Person{
-    shift->throw_not_implemented();
-}
-
-=head2 num_of_people
-
- Title   : num_of_people
- Usage   : my $count = $group->num_of_people;
- Function: returns the number of people currently in a group
- Returns : integer
- Args    : none
-
-=cut
-
-sub num_of_people{
-    shift->throw_not_implemented();
-}
-
-=head2 each_Person
-
- Title   : each_Person
- Usage   : my @people = $group->each_Person();
- Function: returns an array of objects representing
-           the people in the group. 
-           If the string 'id' is passed as an argument will
-           only return an array of ids for the stored people
- Returns : @array of Bio::Pedigree::PersonI or ids
- Args    : (optional) 'id' will cause method to only return a list of ids
-           for the people stored within the group rather than the
-           Bio::Pedigree::PersonI objects
-
-=cut
-
-sub each_Person{
-    shift->throw_not_implemented();
-}
-
-=head2 get_Person
-
- Title   : get_Person
- Usage   : my $p = $group->get_Person($id);
- Function: returns the person object based on a specific person id
- Returns : Bio::Pedigree::PersonI object or undef if that id does not exist
- Args    : person id for person to retrieve
-
-=cut
-
-sub get_Person{
-    shift->throw_not_implemented();
-}
-
-=head2 delete_Marker
-
- Title   : delete_Marker
- Usage   : $group->delete_Marker($name);
- Function: For a given variation name, delete its alleles from all
-           individuals contained within the group
- Returns : boolean on success  - false if marker does not exist for anyone
-                                 true if at least one person had the marker
- Args    : marker name
-
-=cut
-
-sub delete_Marker{
-    shift->throw_not_implemented();
-}
+@ISA = qw(Bio::PopGen::PopulationI);
 
 =head2 center
 
@@ -182,18 +82,18 @@ sub center{
     shift->throw_not_implemented();
 }
 
-=head2 groupid
+=head2 group_id
 
- Title   : groupid
- Usage   : my $id = $group->groupid()
+ Title   : group_id
+ Usage   : my $id = $group->group_id()
  Function: Get/Set Group ID number for this group
  Returns : integer
  Args    : integer (optional) integer to set the group id to
 
 =cut
 
-sub groupid {
-    shift->throw_not_implemented();
+sub group_id {
+    shift->name(@_);
 }
 
 =head2 center_groupid
@@ -211,22 +111,9 @@ sub groupid {
 
 sub center_groupid{
    my ($self) = @_;
-   return $self->center . " ". $self->groupid;
+   return $self->center . " ". $self->group_id;
 }
 
-=head2 description
-
- Title   : description
- Usage   : my $description = $group->description; #or
- Function: Get/Set Group description value
- Returns : string 
- Args    : string (optional) string to set the group description to
-
-=cut
-
-sub description {
-    shift->throw_not_implemented();
-}
 
 =head2 type
 
@@ -246,48 +133,157 @@ sub type {
     shift->throw_not_implemented();
 }
 
-=head2 Algorithms
+=head2 Inherited from Bio::PopGen::PopulationI
+
+These are methods which inherit from Bio::PopGen::PopulationI
+
+=head2 name
+
+ Title   : name
+ Usage   : my $name = $pop->name
+ Function: Get the population name
+ Returns : string representing population name
+ Args    : [optional] string representing population name
+
 
 =cut
 
-=head2 calculate_relationships
+sub name{
+   my ($self,@args) = @_;
+   $self->throw_not_implemented();
+}
 
- Title   : calculate_relationships
- Usage   : $group->calculate_relationships('warn');
- Function: Calculates child->parent pointers and sibships and
-           fills in information for people where applicable
- Returns : number of updates made
- Args    : warnings - if program should warn when updating
-           incorrectly specified relationships
-           valid input is 
-           'warnOnError' - to display warnings but to overwrite
-           'failOnError' - to throw and exception when an error is found
-           passing anything else (or no argument) will cause method to 
-           update errors quietly
+=head2 description
+
+ Title   : description
+ Usage   : my $description = $pop->description
+ Function: Get the population description
+ Returns : string representing population description
+ Args    : [optional] string representing population description
+
 
 =cut
 
-sub calculate_relationships {
+sub description{
+   my ($self,@args) = @_;
+   $self->throw_not_implemented();
+}
+
+=head2 source
+
+ Title   : source
+ Usage   : my $source = $pop->source
+ Function: Get the population source
+ Returns : string representing population source
+ Args    : [optional] string representing population source
+
+
+=cut
+
+sub source{
+   my ($self,@args) = @_;
+   $self->throw_not_implemented();
+}
+
+=head2 get_Individuals
+
+ Title   : get_Individuals
+ Usage   : my @inds = $pop->get_Individuals();
+ Function: Return the individuals, alternatively restrict by a criteria
+ Returns : Array of Bio::PopGen::IndividualI objects
+ Args    : none if want all the individuals OR,
+           -unique_id => To get an individual with a specific id
+           -marker    => To only get individuals which have a genotype specific
+                        for a specific marker name
+
+
+=cut
+
+sub get_Individuals{
     shift->throw_not_implemented();
 }
 
-=head2 find_founders
+=head2 get_Genotypes
 
- Title   : find_founders
- Usage   : my @founders = $group->find_founders();
- Function: Returns a list of 2-pule arrays for each set of founders
-           Founders which are multi-married can be a problem some
-           implementation may insert an artificial ancestor lineage 
-           to solve this problem
- Returns : Array of 2-pule arrays for each couple that can be considered
-           a founder (ie a couple which both people have no parents
-		      in the pedigree)
- Args    : none
+ Title   : get_Genotypes
+ Usage   : my @genotypes = $pop->get_Genotypes(-marker => $name)
+ Function: Get the genotypes for all the individuals for a specific
+           marker name
+ Returns : Array of Bio::PopGen::GenotypeI objects
+ Args    : -marker => name of the marker
+
 
 =cut
 
-sub find_founders {
+sub get_Genotypes{
+    shift->throw_not_implemented;
+}
+
+=head2 get_Marker
+
+ Title   : get_Marker
+ Usage   : my $marker = $population->get_Marker($name)
+ Function: Get a Bio::PopGen::Marker object based on this population
+ Returns : Bio::PopGen::MarkerI object
+ Args    : name of the marker
+
+
+=cut
+
+sub get_Marker{
     shift->throw_not_implemented();
+}
+
+=head2 get_marker_names
+
+ Title   : get_marker_names
+ Usage   : my @names = $pop->get_marker_names;
+ Function: Get the names of the markers
+ Returns : Array of strings
+ Args    : none
+
+
+=cut
+
+sub get_marker_names{
+    my ($self) = @_;
+    $self->throw_not_implemented();
+}
+
+=head2 get_Markers
+
+ Title   : get_Markers
+ Usage   : my @markers = $pop->get_Markers();
+ Function: Will retrieve a list of instantiated MarkerI objects 
+           for a population.  This is a convience method combining
+           get_marker_names with get_Marker
+ Returns : List of array of Bio::PopGen::MarkerI objects
+ Args    : none
+
+
+=cut
+
+sub get_Markers{
+    my ($self) = shift;
+    return map { $self->get_Marker($_) } $self->get_marker_names();
+}
+
+
+=head2 number_individuals
+
+ Title   : number_individuals
+ Usage   : my $count = $pop->number_individuals;
+ Function: Get the count of the number of individuals
+ Returns : integer >= 0
+ Args    : [optional] marker name, will return a count of the number
+           of individuals which have this marker
+
+
+=cut
+
+sub get_number_individuals{
+   my ($self) = @_;
+   $self->throw_not_implemented();
 }
 
 1;
