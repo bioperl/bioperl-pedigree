@@ -37,7 +37,7 @@ my $pedigree = $pedio->read_pedigree(-datfile => $dat,
 
 my $draw = new Bio::Pedigree::Draw(-verbose =>$verbose);
 my $count = 0;
-foreach my $group ( $pedigree->each_Group ) {
+foreach my $group ( $pedigree->get_Groups ) {
     my $outfile = "group_". ($count + 1) . ".$dformat";
     if( $out ) { 
 	$outfile = $out;
