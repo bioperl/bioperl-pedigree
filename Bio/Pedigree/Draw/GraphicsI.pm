@@ -84,7 +84,7 @@ sub _abstractDeath {
            ending   X point
            ending   Y point
            width of line (in points)
-           color of line (string) default 'black'
+           color of line (string)
 =cut
 
 sub draw_line {
@@ -104,8 +104,8 @@ sub draw_line {
            ending   X point (bottom right corner) 
            ending   Y point (bottom right corner)
            width of line (in points)
-           color of line  (string) default 'black'
-           box fill color (string) default 'white'
+           color of line  (string)
+           box fill color (string)
 =cut
 
 sub draw_box {
@@ -115,17 +115,17 @@ sub draw_box {
 =head2 draw_oval
 
  Title   : draw_oval
- Usage   : $graphics->draw_oval($centerx,$centery,$xradius,$yradius,
+ Usage   : $graphics->draw_oval($centerx,$centery,$width,$height,
 				$linewidth,$linecolor, $fillcolor);
  Function: Draws a line with starting and ending points, width and color
  Returns : none
  Args    : center   X point
            center   Y point
-           length of X radius
-           length of Y radius
+           width
+           height
            width of line (in points)
-           color of line   (string) default 'black'
-           oval fill color (string) default 'white'
+           color of line   (string)
+           oval fill color (string)
 =cut
 
 sub draw_oval {
@@ -144,7 +144,7 @@ sub draw_oval {
            text to draw (string)
            textcolor (string)
            fontsize (integer)
-           direction (horizontal or vertial text) (default 'horizontal')
+           direction (horizontal or vertial text)
 
 
 =cut

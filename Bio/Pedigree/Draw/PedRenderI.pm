@@ -61,13 +61,14 @@ Internal methods are usually preceded with a _
 
 package Bio::Pedigree::Draw::PedRenderI;
 use strict;
+use Carp;
 
 sub _abstractDeath {
   my $self = shift;
   my $package = ref $self;
   my $caller = (caller)[1];
   
-  confess "Abstract method '$caller' defined in interface Bio::Pedigree::Draw::GraphicsI not implemented by pacakge $package. Not your fault - author of $package should be blamed!";
+  confess "Abstract method '$caller' defined in interface Bio::Pedigree::Draw::PedRenderI not implemented by pacakge $package. Not your fault - author of $package should be blamed!";
 }
 
 =head2 add_group_to_draw
@@ -89,19 +90,35 @@ sub add_group_to_draw {
     _abstractDeath();
 }
 
-=head2 drawengine
+=head2 max_height
 
- Title   : drawengine
- Usage   : $self->drawengine($engine)
- Function: Get/Set reference to GraphicsI object 
- Returns : Bio::Pedigree::Draw::GraphicsI object if set
- Args    : (optional) Bio::Pedigree::Draw::GraphicsI to set
+ Title   : max_height
+ Usage   : my $height = $rendered->max_height
+ Function: returns the maximum height needed to draw the pedigree
+ Returns : integer
+ Args    : none
 
 =cut
 
-sub drawengine {
+sub max_height {
+    _abstractDeath;
+}
+
+=head2 max_width
+
+ Title   : max_width
+ Usage   : my $width = $renderer->max_width
+ Function: returns the maximum width needed to draw the pedigree
+ Returns : integer
+ Args    : none
+
+
+=cut
+
+sub max_width {
     _abstractDeath();
 }
+
 
 =head2 write
 
@@ -109,7 +126,7 @@ sub drawengine {
  Usage   : $renderer->write;
  Function: Writes pedigree output to data stream using drawengine
  Returns : boolean of success
- Args    : (optional) drawengine to use
+ Args    : drawingengine to use
 
 
 =cut
