@@ -26,8 +26,9 @@ Bio::Pedigree::Draw::PedPlot - An object to plot pedigrees
 
 This is an implementation of Bio::Pedigree::Draw::PedRenderI.
 This is based on code by Jason Stajich for pedigree plotting in 
-PedPlot - see ASHG ..... 
- 
+PedPlot.  
+
+Stajich JE, Haynes C, Pericak-Vance, Am J Hum Genet, suppl, 1998 63,A242.
 
 =head1 FEEDBACK
 
@@ -111,6 +112,8 @@ sub new{
 
     $self->{'_coveredareas'} = [];
     $self->{'_commands'}     = [];
+    $self->{'_min_width'} = $self->{'max_width'} = 0;
+    $self->{'_min_height'} = $self->{'max_height'} = 0;
     return $self;
 }
 
@@ -209,14 +212,23 @@ sub write {
 sub calibrate {
     my ($self) = @_;
     my ($shiftright,$shiftup) = (0,0);
-    if( $self->min_width < 0 ) {
-	$shiftright = abs($self->min_width) + $WIDTH;
+    if( $self->min_width < $WIDTH ) {
+	if( $self->min_width > 0 ) {
+	    $shiftright = $self->min_width;    
+	} else {
+	    $shiftright = abs($self->min_width) + $WIDTH;
+	}
+	
 	$self->{'_min_width'} = 0;
     }
-    $self->max_width($self->max_width + $shiftright + $WIDTH);
+    $self->max_width($self->max_width + $shiftright + 2*$WIDTH);
 
-    if( $self->min_height < 0 ) {
-	$shiftup = abs($self->min_height) + $HEIGHT;
+    if( $self->min_height < $HEIGHT ) {
+	if( $self->min_height > 0 ) {
+	    $shiftup = $self->min_height;    
+	} else {
+	    $shiftup = abs($self->min_height) + $HEIGHT;
+	}
 	$self->{'_min_height'} = 0;
     }
     $self->max_height($self->max_height + $shiftup + $GENERATIONSPACE);
@@ -270,28 +282,52 @@ sub _draw_couple {
     # need to draw the children first
     my $child = $father->child;
     
-    my ($nextx,$nexty) = $self->_draw_children($child->father,$child->mother, 
-					       $x, $y + $GENERATIONSPACE );
-
-    my ($couple_center_x) = (($nextx + $x)/2 - $COUPLESPACE);
-    
+    my ($nextx,$nexty,
+	$firstchild) = $self->_draw_children($child->father,
+					     $child->mother, 
+					     $x+$WIDTH, $y + $GENERATIONSPACE );
+   
+    my ($couple_center_x,$childlinestart,$childlineend);
     if(! $child->patsib && ! $child->matsib ) {
+
 	# handle centering different when there is more than one child
 	if( $child->child ) {
-	    # handle centering different when only child is married
-	    $couple_center_x = $nextx - (2*$COUPLESPACE) - (3*$WIDTH/4);
+	    # handle centering different when the only child is married
+	    $couple_center_x = $firstchild - ($COUPLESPACE + $WIDTH)/2;
 	} else {
-	    $couple_center_x = $x - ($COUPLESPACE/2) + ($WIDTH/2);
+	    $couple_center_x = $firstchild - 5/4*$WIDTH;
 	}
     }  else { 
-	print "using default\n";
+	# these are children with multiple sibs
+	$couple_center_x = ($firstchild + $nextx)/2 - 5/4*$WIDTH;
+	my $lastchild = $child->get_last_sib($father); 
+	($childlinestart,$childlineend) = ($firstchild-$WIDTH/2,
+					   $nextx-$WIDTH/2);
+	# if the last sib in a list is married draw them differently
+	if( $lastchild->child ) {
+	    $couple_center_x = ( $nextx - ($COUPLESPACE+2*$WIDTH) + $x )/2 - $COUPLESPACE/2; 
+	    ($childlinestart,$childlineend) = ( $firstchild-$WIDTH/2,
+						$nextx - ($COUPLESPACE+2*$WIDTH)-$WIDTH/2)
+	}
     }
+    if( defined $childlinestart ) {
+	$self->add_Command(new Bio::Pedigree::Draw::LineCommand
+			   (-startx     => $childlinestart,
+			    -endx       => $childlineend,
+			    -starty     => $y + $GENERATIONSPACE - 
+			    ($HEIGHT/2),
+			    -endy       => $y + $GENERATIONSPACE - 
+			    ($HEIGHT/2),
+			    -linewidth  => $LINEWIDTH,
+			    -color      => $LINECOLOR)
+			   );
+    } 
     my ($one,$two) = ($father,$mother);
     # if this person is someone's child, draw them first
     if( $mother->father ) { ($two,$one) = ( $father, $mother) }
     ($nextx, $nexty) = $self->_draw_person($one, $couple_center_x - $WIDTH,$y);
-
-    # horiz connection line
+    $firstchild = $nextx;
+    # draw the couple connection lines
     $self->add_Command(new Bio::Pedigree::Draw::LineCommand
 		       (-startx     => $couple_center_x,
 			-endx       => $nextx + $COUPLESPACE,
@@ -302,7 +338,7 @@ sub _draw_couple {
 		       );
 
     # vertical connection line
-
+    
     $self->add_Command(new Bio::Pedigree::Draw::LineCommand
 		       (-startx     => $nextx + ($COUPLESPACE/2),
 			-endx       => $nextx + ($COUPLESPACE/2),
@@ -313,9 +349,7 @@ sub _draw_couple {
 		       );
  
     ($nextx, $nexty) = $self->_draw_person($two, $nextx + $COUPLESPACE,$y);
-    
-    # draw the couple connection lines
-    return ($nextx,$nexty);
+    return ($nextx+$WIDTH,$nexty,$firstchild);
 }
 
 =head2 _draw_children
@@ -359,24 +393,26 @@ sub _draw_children {
 	$mother->personid;  
     }
     my $child = $first_p_child;
-    
+    my $firstchild;
+
     if( $child->child ) {
      # This child is married, so draw them as a couple first
-    	( $nextx,$nexty) = $self->_draw_couple($child->child->father, 
+    	( $nextx,$nexty,$firstchild) = $self->_draw_couple($child->child->father, 
 					       $child->child->mother,
 					       $x,$y);
     } else {
 	($nextx,$nexty) = $self->_draw_person($child, $x,$y);
+	$firstchild = $nextx;
     }
-    print "nextx $nextx\n";    
+    $self->debug( "nextx $nextx\n");    
     # deal with siblings
     if( $child->patsib ) {
 	($nextx,$nexty) = $self->_draw_sibling($child->patsib, 
-					       'patsib', $nextx + $WIDTH, 
-					       $nexty);    
-	
+					       'patsib', 
+					       $nextx + $WIDTH, 
+					       $nexty);	
     }
-    return ($nextx,$nexty);
+    return ($nextx,$nexty,$firstchild);
 }
 
 =head2 _draw_sibling
@@ -400,14 +436,16 @@ sub _draw_sibling {
     if( $person->child ) {
 	( $nextx,$nexty) = $self->_draw_couple($person->child->father, 
 					       $person->child->mother,
-					       $x,$y);
+					       MAX($self->max_width,$x),$y);
     } else {
-	($nextx,$nexty) = $self->_draw_person($person, $x, $y);
+	($nextx,$nexty) = $self->_draw_person($person, 
+					      MAX($self->max_width,$x),$y);
     }
     my ($sib) = $person->$sibtype();
     if( defined $sib ) {	
-	($nextx, $nexty) = $self->_draw_sibling($sib,$sibtype, 
-						$self->max_width, $y);
+	($nextx, $nexty) = $self->_draw_sibling($sib,
+						$sibtype, 
+						$nextx + $WIDTH, $y);
     }
 
     return ($nextx, $nexty);
@@ -423,6 +461,7 @@ sub _draw_person {
 	my ($class,$result) = ($person->get_Result($marker)->alleles);	
 	$affstatus = ( defined $result && $result eq $code );
     }
+    $self->debug("Drawing ".$person->personid."\n");
     if( $person->gender eq 'M' ) {
 	$self->add_Command( new Bio::Pedigree::Draw::BoxCommand
 			    (-startx    => $x,
@@ -450,12 +489,13 @@ sub _draw_person {
 	$self->throw("Do not know how to draw a person with gender ". $person->gender);
     }
     $self->add_Command( new Bio::Pedigree::Draw::TextCommand
-			( -startx    => $x + ($WIDTH/4), 
+			( -startx    => $x,
 			  -starty    => $y + $HEIGHT,
 			  -text      => $person->displayid,
 			  -fontsize  => $LABELFONTSIZE,
 			  -direction => 'horizontal')
 			);
+
     if( $person->father ) {
 	$self->add_Command(new Bio::Pedigree::Draw::LineCommand
 			   (-startx     => $x + ($WIDTH/2),

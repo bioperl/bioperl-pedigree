@@ -348,7 +348,7 @@ sub new {
     my ($class, @args) = @_;
     my $self = $class->SUPER::new(@args);
     my ($height, $width,$fill) = $self->_rearrange([qw(HEIGHT WIDTH 
-						   FILLCOLOR)],@args);  
+						       FILLCOLOR)],@args);  
 
     if( ! defined $height || ! defined $height ) {
 	$self->throw("Must defined height and width in BoxCommand");
@@ -452,7 +452,7 @@ sub new {
     my ($class, @args) = @_;
     my $self = $class->SUPER::new(@args);
     my ($height, $width,$fill) = $self->_rearrange([qw(HEIGHT WIDTH 
-						   FILLCOLOR)],@args);  
+						       FILLCOLOR)],@args);  
 
     if( ! defined $height || ! defined $width ) {
 	$self->throw("Must define height and width in OvalCommand");

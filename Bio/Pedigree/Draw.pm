@@ -121,9 +121,11 @@ sub draw {
     my ($self,@args) = @_;
     $self->_initialize_io(@args);
 
-    my ($type,$format,$pedigree) = $self->_rearrange([qw(RENDERTYPE
-							 FORMAT
-							 PEDIGREE)],@args);
+    my ($type,$groupindex,$format,
+	$pedigree) = $self->_rearrange([qw(RENDERTYPE
+					   GROUP
+					   FORMAT
+					   PEDIGREE)],@args);
     $self->throw("Must specify a pedigree !") unless defined $pedigree;
     $type = $DEFAULTRENDERTYPE if( !defined $type );
 
@@ -163,10 +165,20 @@ sub draw {
     foreach my $m ( $pedigree->each_Marker ) {
 	if( $m->type eq 'DISEASE' ) { $marker = $m; last;}
     }
-    my $renderengine = $rendermodule->new;
-    foreach my $group ( $pedigree->each_Group ) {
-	$renderengine->add_group_to_draw($group, $marker->name, 1);
-        last;
+    my $renderengine = $rendermodule->new(-verbose => $self->verbose);
+    my @groups = $pedigree->each_Group;    
+    if( $groupindex ) {
+        my $group = $groups[$groupindex];
+        if( ! defined $group ) { 
+	    $self->warn("no group valid for index $groupindex");
+	    return;
+        }
+        $renderengine->add_group_to_draw($group, $marker->name, 1);
+    } else {      
+	foreach my $group ( @groups ) {
+	    $renderengine->add_group_to_draw($group, $marker->name, 1);
+	    last;
+	}
     }
     # reposition the drawing
     $renderengine->calibrate();
