@@ -114,6 +114,8 @@ sub _initialize {
 
 =cut
 
+sub type { return 'DISEASE'; }
+
 =head2 description
 
  Title   : description
