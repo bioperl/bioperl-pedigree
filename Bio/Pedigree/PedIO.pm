@@ -184,10 +184,10 @@ sub close {
     }
 }
 
-=head2 _initialize_pedfh
+=head2 _initialize_fh
 
- Title   : _initialize_pedfh
- Usage   : $pedio->_initialize_pedfh(@args)
+ Title   : _initialize_fh
+ Usage   : $pedio->_initialize_fh(@args)
  Function: Initialize pedigree data input from file or fh
  Returns : whether or not a pedfh was initialized
  Args    : -pedfile  -- either filehandle, GLOB, or filename

@@ -3,6 +3,7 @@
 
 use strict;
 use vars qw($error $NUMTESTS $SKIPXML $DEBUG) ;
+use Data::Dumper;
 
 $DEBUG = $ENV{'BIOPERLDEBUG'} || 0;
 
@@ -16,7 +17,7 @@ BEGIN {
     }
     use Test;
     
-    $NUMTESTS = 54;
+    $NUMTESTS = 56;
     plan tests => $NUMTESTS;
 
     eval { require Bio::Pedigree::PedIO; };
@@ -144,6 +145,8 @@ ok ($group->center_groupid, "UNK 13");
 ok ($group->each_Person, 4);
 
 $person = $group->get_Person(4);
+ok(($person->get_Genotypes(6)->get_Alleles)[0],4);
+ok(($person->get_Genotypes(6)->get_Alleles)[1],7);
 
 ok ($person->father_id, 1);
 ok ( ! $person->father );

@@ -230,8 +230,7 @@ sub read_pedigree{
 
 sub write_pedigree {
     my($self,@args) = @_;
-   if( ! $self->_initialize_pedfh(@args) ||
-       ! $self->_initialize_datfh(@args) ) {
+   if( ! $self->_initialize_fh(@args) ) {
        $self->throw("Must specify both pedigree and marker data output files for ped format")
    }
 
@@ -239,7 +238,7 @@ sub write_pedigree {
     my $fh = $self->_pedfh;
     my ($pedigree) = $self->_rearrange([qw(PEDIGREE)],@args);
     # write the dat file first
-    my @markers = $pedigree->each_Marker;
+    my @markers = $pedigree->get_Markers;
     $fh->_print(sprintf("%2d %d %d %d\n",scalar @markers, 0,0,5));
     $fh->_print("0 0.0 0.0 0\n"); # intricacies of the dat format
                                         # I don't understand at this point
@@ -278,20 +277,20 @@ sub write_pedigree {
     $fh = $self->_pedfh;
     foreach my $group ( $pedigree->get_Groups ) {
 	my $personcount = 1;
-	foreach my $person ( $group->each_Person ) {
+	foreach my $person ( $group->get_Individuals ) {
 	  $personremap{$person->person_id} = $personcount++;
 	  $fh->_print(sprintf("%s %2d %2d %2d %2d %2d ",#%2d %d %d ",
 				    $group->group_id,
 				    $personremap{$person->person_id},
 				    $personremap{$person->father_id},
 				    $personremap{$person->mother_id},
-#								$personremap{$person->patsib_id},
-#								$personremap{$person->matsib_id},
+#				     $personremap{$person->patsib_id},
+#				     $personremap{$person->matsib_id},
 				    $gendermap{$person->gender},
 				    $person->proband
 							   ));
 
-	  foreach my $result ( $person->each_Result ) {
+	  foreach my $result ( $person->get_Genotypes ) {
 		$fh->_print(join(' ', map { sprintf("%5s ", $_)}
 							   $result->alleles));
 
