@@ -27,12 +27,12 @@ which there are results.
     print "comment is ", $pedigree->comment ,"\n";
 
     print "markers are :\n";
-    foreach my $markername ( $pedigree->each_Marker('name') ) {
+    for my $markername ( $pedigree->get_Markers('name') ) {
 	print "$markername\n";
     }
-    foreach my $group ( $pedigree->get_Groups ) {
+    for my $group ( $pedigree->get_Groups ) {
 	print "group name is ", $group->center_groupid, "\n";
-	foreach my $person ( $pedigree->each_Person ) {
+	for my $person ( $group->each_Person ) {
 	    print $person->person_id, " ", $person->gender, "\n";
 	}
     }
