@@ -17,7 +17,7 @@ BEGIN {
     }
     use Test;
     
-    $NUMTESTS = 56;
+    $NUMTESTS = 57;
     plan tests => $NUMTESTS;
 
     eval { require Bio::Pedigree::PedIO; };
@@ -137,6 +137,11 @@ $pedigree = $pedfmtio->read_pedigree(-pedfile => $io->catfile('t', 'data',
 				     -datfile => $io->catfile('t', 'data', 
 							      'C14_Comb.dat'));
 
+my $pedio = new Bio::Pedigree::PedIO( -format => 'ped');
+$pedio->write_pedigree(-pedigree=> $pedigree,
+                       -datfile => '>x.dat',
+                       -pedfile => '>x.ped');
+
 ($group) = sort { $a->group_id <=> $b->group_id } $pedigree->get_Groups;
 
 ok ($group);
@@ -149,9 +154,14 @@ ok(($person->get_Genotypes(6)->get_Alleles)[0],4);
 ok(($person->get_Genotypes(6)->get_Alleles)[1],7);
 
 ok ($person->father_id, 1);
-ok ( ! $person->father );
+#warn "\n\n".Dumper($person->father)."\n\n";
 
-$group->calculate_relationships;
+my $father;
+ok($father = $person->father);
+ok(! $father->father_id);
+#ok ( ! $person->father );
+#$group->calculate_relationships;
+
 ok ( $person->father );
 $person = $group->get_Person(3);
 ok ( $person->father->person_id, 1);

@@ -235,7 +235,10 @@ sub write_pedigree {
    }
 
 #CAVEAT! this method does NOT produce valid locus files.
-    my $fh = $self->_pedfh;
+#####################
+# CREATE LOCUS FILE #
+#####################
+    my $fh = $self->_datfh;
     my ($pedigree) = $self->_rearrange([qw(PEDIGREE)],@args);
     # write the dat file first
     my @markers = $pedigree->get_Markers;
@@ -255,10 +258,11 @@ sub write_pedigree {
 				      $marker->name));
 	} elsif( $marker->type eq 'VARIATION' ) {
 	    $fh->_print(sprintf("%2s %2s #%s\n  ", $marker->type_code,
-				      $marker->known_alleles,
+				      $marker->get_Alleles,
 				      $marker->name));
-#	    $fh->_print(join(' ', $marker->known_alleles), "\n");
-		$fh->_print(join ' ', map { $marker->get_allele_frequency($_) } reverse $marker->known_alleles);
+
+		my %allele_frequency = $marker->get_Allele_Frequencies;
+		$fh->_print(join ' ', map { $allele_frequency{$_} } reverse $marker->get_Alleles);
 		$fh->_print("\n");
 	} else { 
 	    $self->warn("Unkown marker ". $marker->name . " skipping...");
@@ -274,6 +278,10 @@ sub write_pedigree {
 		      'F' => 2,
 		      'U' => 0);
     $pedigree->calculate_all_relationships;
+
+###################
+# CREATE PED FILE #
+###################
     $fh = $self->_pedfh;
     foreach my $group ( $pedigree->get_Groups ) {
 	my $personcount = 1;
@@ -284,15 +292,14 @@ sub write_pedigree {
 				    $personremap{$person->person_id},
 				    $personremap{$person->father_id},
 				    $personremap{$person->mother_id},
-#				     $personremap{$person->patsib_id},
-#				     $personremap{$person->matsib_id},
 				    $gendermap{$person->gender},
 				    $person->proband
 							   ));
 
 	  foreach my $result ( $person->get_Genotypes ) {
 		$fh->_print(join(' ', map { sprintf("%5s ", $_)}
-							   $result->alleles));
+#API change							   $result->alleles));
+							   $result->get_Alleles));
 
 	  }
 	  $fh->_print("\n");
