@@ -15,12 +15,9 @@ BEGIN {
     $NUMTESTS = 2;
     plan tests => $NUMTESTS;
     eval { require GD; 
-	   require Bio::Pedigree::Pedigree; 
-	   require Bio::Pedigree::PedIO;
-	   require Bio::Pedigree::Draw;
        };
     if( $@ ) {
-	print STDERR "Cannot load GD or Tie::IxHash, skipping tests\n";
+	print STDERR "Cannot load GD, skipping tests\n";
 	$error = 1;
    }
 }
@@ -36,7 +33,8 @@ if( $error == 1 ) {
 }
 
 use Bio::Root::IO;
-
+use Bio::Pedigree::PedIO;
+use Bio::Pedigree::Draw;
 my $verbose = 0;
 my $io = new Bio::Root::IO;
 
