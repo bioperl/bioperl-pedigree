@@ -103,8 +103,6 @@ sub new {
 	return undef unless( &_load_format_module($format) );
 	return "Bio::PedIO::$format"->new(@args);
     }
-
-    return $self;
 }
 
 # _initialize is chained for all SeqIO classes
@@ -186,20 +184,20 @@ sub close { } # do nothing here for now
 =cut
 
 sub _initialize_pedfh {
-   my ($self,@args) = @_;
-   my $fh;
-   $self->{'_readbufferped'} = '';
-   my ($pedfile) = $self->_initialize([qw(PEDFILE)], @args);
-   return undef if( ! defined $pedfile );
-   if( ref($pedfile) =~ /GLOB/i ) {
-       $fh = $pedfile;
-   } elsif( defined $pedfile ($pedfile ne '') ) {
-       $fh = Symbol::gensym();
-       open ($fh,$pedfile) ||
-	   $self->throw("Could not open IO for $file: $!");
-   }   
-   $self->_pedfh($fh) if( defined $fh);
-   return defined $fh;
+    my ($self,@args) = @_;
+    my $fh;
+    $self->{'_readbufferped'} = '';
+    my ($pedfile) = $self->_initialize([qw(PEDFILE)], @args);
+    return undef if( ! defined $pedfile );
+    
+    if( ref($pedfile) =~ /GLOB/i ) {
+	$fh = $pedfile;
+    } elsif( defined $pedfile && $pedfile ne '' ) {
+	$fh = Symbol::gensym();
+	open ($fh,$pedfile) || $self->throw("Could not open IO for $pedfile: $!");
+    } else { return undef; }
+    $self->_pedfh($fh) if( defined $fh);
+    return defined $fh;
 }
 
 =head2 _initialize_datfh
@@ -222,11 +220,10 @@ sub _initialize_datfh {
    return undef if( ! defined $datfile );
    if( ref($datfile) =~ /GLOB/i ) {
        $fh = $datfile;
-   } elsif( defined $datfile ($datfile ne '') ) {
+   } elsif( defined $datfile && $datfile ne '' ) {
        $fh = Symbol::gensym();
-       open ($fh,$datfile) ||
-	   $self->throw("Could not open IO for $file: $!");
-   }   
+       open ($fh,$datfile) || $self->throw("Could not open IO for $datfile: $!");
+   } else { return undef; }
    $self->_datfh($fh) if( defined $fh);
    return defined $fh;
 }

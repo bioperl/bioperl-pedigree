@@ -18,8 +18,9 @@ Bio::Pedigree::Marker - generic module for managing lapis Marker data
 
     use Bio::Pedigree::Marker;
     my $marker = new Bio::Pedigree::Marker(-name       => $name,
-					-type       => $type,
-					-desc       => $desc
+					   -type       => $type,
+					   -desc       => $desc
+					   -display    => $display_name
 					);
 
 =head1 DESCRIPTION
@@ -96,12 +97,16 @@ sub new {
 
 sub _initialize {
     my ($self, @args) = @_;
-    my ($name, $type, $desc) = $self->SUPER::_rearrange([qw(NAME TYPE DESC)],
-							@args);
+    my ($name, $type, $desc, 
+	$display) = $self->SUPER::_rearrange([qw(NAME 
+						 TYPE DESC 
+						 DISPLAY)],
+					     @args);
 
     $name && $self->name($name);    
     $desc && $self->description($desc);    
     $type && $self->type($type);
+    $display && $self->display_name($display);
     return;
 }
 
@@ -159,6 +164,26 @@ sub description {
 	$self->{'_desc'} = $value;
     }
     return $self->{'_desc'};
+}
+
+=head2 display_name
+
+ Title   : display_name
+ Usage   : $obj->display_name($newval)
+ Function: 
+ Example : 
+ Returns : value of display_name
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub display_name{
+   my ($obj,$value) = @_;
+   if( defined $value) {
+      $obj->{'_display_name'} = $value;
+    }
+    return $obj->{'_display_name'};
 }
 
 =head2 type_code

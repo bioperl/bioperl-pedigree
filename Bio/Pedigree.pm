@@ -12,9 +12,9 @@
 
 =head1 NAME
 
-Bio::Pedigree - This is the toplevel object which contains
-references to the Markers genotyped for a set of families, and the
-families for which there are results.
+Bio::Pedigree - This is the toplevel object which contains references
+to the Markers genotyped for a set of families, and the families for
+which there are results.
 
 =head1 SYNOPSIS
 
@@ -68,7 +68,7 @@ use strict;
 use Bio::Root::RootI;
 use Tie::IxHash;
 use Bio::Pedigree::Group;
-use Bio::Pedigree::Variation;
+use Bio::Pedigree::Marker;
 
 @ISA = qw(Bio::Root::RootI );
 
@@ -103,7 +103,7 @@ sub new {
 	  $self->throw("Trying to initialize Bio::Pedigree object with groups ($groups) which is not an array reference");
       } else { 
 	  foreach my $group ( @$groups ) {
-	      $self->add_group($group);
+	      $self->add_Group($group);
 	  }
       }
   }
@@ -112,24 +112,24 @@ sub new {
 	  $self->throw("Trying to initialize Bio::Pedigree object with markers ($markers) which is not an array reference");
       } else { 
 	  foreach my $marker ( @$markers ) {
-	      $self->add_marker($marker);
+	      $self->add_Marker($marker);
 	  }
       }
   }
   return $self;
 }
 
-=head2 add_group
+=head2 add_Group
 
- Title   : add_group
- Usage   : my $count = $pedigree->add_group($group);
+ Title   : add_Group
+ Usage   : my $count = $pedigree->add_Group($group);
  Function: Adds a group to the Pedigree object
  Returns : count of number of groups contained
  Args    : Bio::Pedigree::GroupI object
 
 =cut
 
-sub add_group{
+sub add_Group{
    my ($self,$group) = @_;
    return 0 if( ! $group );
    if( !ref($group) || ! $group->isa('Bio::Pedigree::GroupI') ) {
@@ -140,10 +140,10 @@ sub add_group{
    return keys %{$self->{'_groups'}};
 }
 
-=head2 remove_group
+=head2 remove_Group
 
- Title   : remove_group
- Usage   : my $boolean = $pedigree->remove_group("$center $groupid");
+ Title   : remove_Group
+ Usage   : my $boolean = $pedigree->remove_Group("$center $groupid");
  Function: Removes a group from the list of stored groups in this pedigree
  Returns : boolean of success
  Args    : - either Bio::Pedigree::GroupI object or 
@@ -152,7 +152,7 @@ sub add_group{
 
 =cut
 
-sub remove_group{
+sub remove_Group{
    my ($self,$val) = @_;
    if( ref($val) && $val->isa('Bio::Pedigree::GroupI') ) {
        $val = $val->center_groupid;
@@ -213,17 +213,17 @@ sub num_of_groups{
    return scalar keys %{$self->{'_groups'}};
 }
 
-=head2 add_marker
+=head2 add_Marker
 
- Title   : add_marker
- Usage   : my $count = $pedigree->add_marker($marker);
+ Title   : add_Marker
+ Usage   : my $count = $pedigree->add_Marker($marker);
  Function: Adds a new Marker to the Pedigree
  Returns : count of number of markers stored in pedigree
  Args    : Bio::Pedigree::MarkerI object
 
 =cut
 
-sub add_marker{
+sub add_Marker{
    my ($self,$marker,$overwrite) = @_;
    return 0 if( ! $marker );
    if( !ref($marker) || ! $marker->isa('Bio::Pedigree::MarkerI') ) {
@@ -237,17 +237,17 @@ sub add_marker{
    return scalar keys %{$self->{'_markers'}};   
 }
 
-=head2 remove_marker
+=head2 remove_Marker
 
- Title   : remove_marker
- Usage   : my $status = $pedigree->remove_marker($markername);
+ Title   : remove_Marker
+ Usage   : my $status = $pedigree->remove_Marker($markername);
  Function: Removes a marker from the Pedigree object
  Returns : boolean of status
  Args    : Either marker name (string) or reference to Bio::Pedigree::MarkerI object
 
 =cut
 
-sub remove_marker{
+sub remove_Marker{
    my ($self,$val) = @_;
    if( ref($val) && $val->isa('Bio::Pedigree::MarkerI') ) {
        $val = $val->name;

@@ -99,10 +99,10 @@ sub _initialize {
 
     $self->{'_alleles'} = {};
 
-    my ($name,$alleles, $display, 
-	$desc, $chrom, $fwd,$rev) = $self->_rearrange([qw(NAME ALLELES DISPLAY
-							  DESC CHROM FWDFLANK
-							  REVFLANK)], @args);
+    my ($name,$alleles, $desc, $chrom, 
+	$fwd,$rev) = $self->_rearrange([qw(NAME ALLELES
+					   DESC CHROM FWDFLANK
+					   REVFLANK)], @args);
     if( ! defined $name ) {
 	$self->throw("Did not specify a valid name for the marker");
     }
@@ -115,7 +115,6 @@ sub _initialize {
 	$self->add_allele( $allele, $freq);
     }
     # optional fields
-    $display && $self->display_name($display);
     $fwd     && $self->upstream_flanking_seq($fwd);
     $rev     && $self->dnstream_flanking_seq($rev);
     $chrom   && $self->chrom($chrom);
@@ -141,7 +140,7 @@ sub upstream_flanking_seq {
 	if( !ref($seq) ) {
 	    my $name = $self->name;
 	    $seq = new Bio::PrimarySeq(-seq     => $seq,
-				       -moltype => 'DNA',
+				       -moltype => 'dna',
 				       -desc    => "upstream seq for variation $name",
 				       -id      => "upstrm_$name");
 	}
