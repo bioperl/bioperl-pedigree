@@ -11,17 +11,6 @@ BEGIN {
     }
     use Test;
     plan tests => $NUMTESTS;
-    eval { require Tie::IxHash;
-	   require Bio::Pedigree::Pedigree;
-	   require Bio::Pedigree::Group;
-	   require Bio::Pedigree::Person;
-	   require Bio::Pedigree::Result;
-       };
-    if( $@ ) {
-	print STDERR "skipping tests because Tie::IxHash is not installed\n";
-	$error = 1;
-    }
-
 }
 
 END { 
@@ -29,51 +18,56 @@ END {
 	skip("Skipping rest of Pedigree tests",1);
     }
 }
+use Bio::PopGen::Genotype;
+use Bio::Pedigree::Person;
+use Bio::Pedigree::Group;
+use Bio::Pedigree::Pedigree;
+
 
 if( $error == 1 ) { exit(0); }
 
-my @r = ( new Bio::Pedigree::Result(-name    => 'D1S234',
-				    -alleles => [100,102] ),
-	  new Bio::Pedigree::Result(-name    => 'CFDX',
-				    -alleles => ['A'] ),		
+my @r = ( new Bio::PopGen::Genotype(-marker_name    => 'D1S234',
+				      -alleles => [100,102] ),
+	  new Bio::PopGen::Genotype(-marker_name    => 'CFDX',
+				      -alleles => ['A'] ),		
 	  );
 
 my @p;
  
 push @p, ( new Bio::Pedigree::Person(-person_id => 1,
-				     -father => 0,
-				     -mother => 0,
+				     -father_id => 0,
+				     -mother_id => 0,
 				     -gender   => 'M',
-				     -results  => [@r]) );
+				     -genotypes  => [@r]) );
 
-@r = ( new Bio::Pedigree::Result(-name    => 'D1S234',
+@r = ( new Bio::PopGen::Genotype(-marker_name    => 'D1S234',
 				 -alleles => [110,105] ),
-       new Bio::Pedigree::Result(-name    => 'CFDX',
+       new Bio::PopGen::Genotype(-marker_name    => 'CFDX',
 				 -alleles => ['U'] ),		
        );
-push @p, ( new Bio::Pedigree::Person(-person_id => 2,
-				     -father   => 0,
-				     -mother   => 0,
-				     -gender   => 'F',
-				     -results  => [@r]) );
+push @p, ( new Bio::Pedigree::Person(-person_id   => 2,
+				     -father_id   => 0,
+				     -mother_id   => 0,
+				     -gender      => 'F',
+				     -genotypes   => [@r]) );
 
-@r = ( new Bio::Pedigree::Result(-name    => 'D1S234',
+@r = ( new Bio::PopGen::Genotype(-marker_name    => 'D1S234',
 				 -alleles => [110,102] ),
-       new Bio::Pedigree::Result(-name    => 'CFDX',
+       new Bio::PopGen::Genotype(-marker_name    => 'CFDX',
 				 -alleles => ['A'] ),		
        );
 
-push @p, ( new Bio::Pedigree::Person(-person_id => 3,
-				     -father   => 1,
-				     -mother   => 2,
-				     -gender   => 'M',
-				     -results  => [@r] ));
+push @p, ( new Bio::Pedigree::Person(-person_id  => 3,
+				     -father_id  => 1,
+				     -mother_id  => 2,
+				     -gender     => 'M',
+				     -genotypes  => [@r] ));
 
 my $group = new Bio::Pedigree::Group( -people  => [@p],
 				      -center  => 'DUK',
-				      -groupid => 1,
+				      -group_id => 1,
 				      -type    => 'FAMILY',
-				      -desc    => 'simple example');
+				      -description    => 'simple example');
 
 my $pedigree = new Bio::Pedigree::Pedigree( -groups => [ $group ]);
 
