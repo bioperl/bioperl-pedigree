@@ -61,16 +61,9 @@ Internal methods are usually preceded with a _
 
 package Bio::Pedigree::Draw::GraphicsI;
 use strict;
-
-use Carp;
-
-sub _abstractDeath {
-  my $self = shift;
-  my $package = ref $self;
-  my $caller = (caller)[1];
-  
-  confess "Abstract method '$caller' defined in interface Bio::Pedigree::Draw::GraphicsI not implemented by pacakge $package. Not your fault - author of $package should be blamed!";
-}
+use Bio::Root::RootI;
+use vars qw(@ISA);
+@ISA = qw(Bio::Root::RootI);
 
 =head2 draw_line
 
@@ -88,7 +81,7 @@ sub _abstractDeath {
 =cut
 
 sub draw_line {
-    _abstractDeath();
+    shift->throw_not_implemented();
 }
 
 
@@ -109,7 +102,7 @@ sub draw_line {
 =cut
 
 sub draw_box {
-    _abstractDeath();
+    shift->throw_not_implemented();
 }
 
 =head2 draw_oval
@@ -129,7 +122,7 @@ sub draw_box {
 =cut
 
 sub draw_oval {
-    _abstractDeath();
+    shift->throw_not_implemented();
 }
 
 =head2 draw_text
@@ -150,7 +143,7 @@ sub draw_oval {
 =cut
 
 sub draw_text {
-    _abstractDeath();
+    shift->throw_not_implemented();
 }
 
 1;

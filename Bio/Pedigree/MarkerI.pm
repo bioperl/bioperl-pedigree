@@ -67,16 +67,9 @@ Internal methods are usually preceded with a _
 
 package Bio::Pedigree::MarkerI;
 use strict;
-
-use Carp;
-
-sub _abstractDeath {
-  my $self = shift;
-  my $package = ref $self;
-  my $caller = (caller)[1];
-  
-  confess "Abstract method '$caller' defined in interface Bio::Pedigree::MarkerI not implemented by pacakge $package. Not your fault - author of $package should be blamed!";
-}
+use Bio::Root::RootI;
+use vars qw(@ISA);
+@ISA = qw(Bio::Root::RootI);
 
 =head2 display_name
 
@@ -87,6 +80,10 @@ sub _abstractDeath {
  Args    : (optional) string to set
 
 =cut
+
+sub display_name{
+    shift->throw_not_implemented();
+}
 
 =head2 name
 
@@ -100,7 +97,7 @@ sub _abstractDeath {
 =cut
 
 sub name{
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
 =head2 type
@@ -115,7 +112,7 @@ sub name{
 =cut
 
 sub type{
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
 =head2 description
@@ -129,7 +126,7 @@ sub type{
 =cut
 
 sub description{
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
 
@@ -146,7 +143,7 @@ sub description{
 =cut
 
 sub num_of_result_alleles{
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
 =head2 type_code
@@ -160,7 +157,7 @@ sub num_of_result_alleles{
 =cut
 
 sub type_code {
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
 1;

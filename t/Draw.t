@@ -9,6 +9,9 @@ BEGIN {
     plan tests => $NUMTESTS;
 }
 
+END {
+    unlink('draw3.png');
+}
 use Bio::Pedigree::Draw;
 use Bio::Root::IO;
 use Bio::Pedigree::PedIO;
@@ -18,9 +21,9 @@ my $io = new Bio::Root::IO;
 my $pedio = new Bio::Pedigree::PedIO(-format => 'linkage');
 
 my $pedigree = $pedio->read_pedigree(-datfile => $io->catfile('t','data',
-							      'x-linked.pdat'),
+							      'example1.pdat'),
 				     -pedfile => $io->catfile('t','data',
-							      'x-linked.pped'));
+							      'example1.pped'));
 #my $pedio = new Bio::Pedigree::PedIO(-format => 'lapis');
 
 #my $pedigree = $pedio->read_pedigree(-pedfile => $io->catfile('t','data','test2.lap'));

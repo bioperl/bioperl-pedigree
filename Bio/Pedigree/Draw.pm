@@ -71,9 +71,9 @@ use vars qw(@ISA %FORMATS %RENDERTYPES $DEFAULTRENDERTYPE);
 $DEFAULTRENDERTYPE = 'pedplot';
 
 use Bio::Root::IO;
-use Bio::Root::RootI;
+use Bio::Root::Root;
 
-@ISA = qw(Bio::Root::IO Bio::Root::RootI);
+@ISA = qw(Bio::Root::Root Bio::Root::IO );
 
 =head2 new
 

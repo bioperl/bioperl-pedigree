@@ -75,7 +75,7 @@ use vars qw(@ISA $DEFAULTSTARTX $DEFAULTSTARTY
 	    $AFFFILLCOLOR $UNAFFFILLCOLOR);
 use strict;
 
-use Bio::Root::RootI;
+use Bio::Root::Root;
 use Bio::Pedigree::Draw::PedRenderI;
 use Bio::Pedigree::Draw::Command;
 
@@ -93,7 +93,7 @@ $TEXTCOLOR       = 'BLACK';
 $AFFFILLCOLOR    = 'BLACK';
 $UNAFFFILLCOLOR  = 'WHITE';
 
-@ISA = qw( Bio::Pedigree::Draw::PedRenderI Bio::Root::RootI );
+@ISA = qw( Bio::Root::Root Bio::Pedigree::Draw::PedRenderI  );
 
 =head2 new
 

@@ -57,7 +57,7 @@ ok($dx->isa('Bio::Pedigree::Marker') &&
    );
 ok( $dx->name, 'ALZAFF' );
 ok( $dx->description, 'Affected Alz');
-ok( $dx->type, 'disease');
+ok( lc $dx->type, 'disease');
 ok( scalar $dx->each_Liability_class, 1);
 ok( ($dx->get_Penetrance_for_Class('A'))[2], 1.000);
 ok( $dx->frequencies, 2);

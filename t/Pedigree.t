@@ -8,7 +8,7 @@ BEGIN {
     $NUMTESTS = 4;
     plan tests => $NUMTESTS;
 }
-use Bio::Pedigree;
+use Bio::Pedigree::Pedigree;
 use Bio::Pedigree::Group;
 use Bio::Pedigree::Person;
 use Bio::Pedigree::Result;
@@ -56,7 +56,7 @@ my $group = new Bio::Pedigree::Group( -people  => [@p],
 				      -type    => 'FAMILY',
 				      -desc    => 'simple example');
 
-my $pedigree = new Bio::Pedigree( -groups => [ $group ]);
+my $pedigree = new Bio::Pedigree::Pedigree( -groups => [ $group ]);
 
 ok ($pedigree);
 ok ($pedigree->num_of_groups, 1);

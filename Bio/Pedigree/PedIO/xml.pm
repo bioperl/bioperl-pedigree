@@ -12,7 +12,7 @@
 
 =head1 NAME
 
-Bio::Pedigree::PedIO::xml - DESCRIPTION of Object
+Bio::Pedigree::PedIO::xml - Pedigree IO for an internal Pedigree XML format 
 
 =head1 SYNOPSIS
 
@@ -78,7 +78,7 @@ use IO;
  Function: initialization parameters are parsed here in
            the PedIO system instead of in the constructor
  Returns : NONE
- Args    : NO PedIO::lapis specific arguments at this time
+ Args    : NO PedIO::xml specific arguments at this time
 
 =cut
 
@@ -87,7 +87,7 @@ use IO;
 
  Title   : read_pedigree
  Usage   : my $pedigree = $pedio->read_pedigree(-pedfile => $pedfile);
- Function: Instatiates a Bio::Pedigree object from a data source
+ Function: Instatiates a Bio::Pedigree::Pedigree object from a data source
  Returns : Bio::Pedigree object or undef on failed reading 
  Args    : -pedfile  => pedigree input location
            (-datfile is not needed for a lapis format)
@@ -109,7 +109,7 @@ sub read_pedigree {
            (some formats have the pedigree and marker data 
 	    stored in the same file rather than in 2 separate files)
  Returns : boolean of success, may throw exception on fatal error 
- Args    : -pedigree => Bio::Pedigree object
+ Args    : -pedigree => Bio::Pedigree::Pedigree object
            -pedfile / -pedfh => pedigree output location
            -datfile / -datfh => (if needed) marker data output location
            (datfile not needed for xml format)
@@ -123,7 +123,7 @@ sub write_pedigree {
     my $outfh = new IO::File(">test.xml");
     my ($pedigree) = $self->_rearrange([qw(PEDIGREE)], @args);
     if( !defined $pedigree || !ref($pedigree) || 
-	!$pedigree->isa('Bio::Pedigree') ) {
+	!$pedigree->isa('Bio::Pedigree::Pedigree') ) {
 	$self->warn("Trying to write a pedigree without passing in a pedigree object!");
 	return 0;
     }    

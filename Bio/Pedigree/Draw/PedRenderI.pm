@@ -61,15 +61,9 @@ Internal methods are usually preceded with a _
 
 package Bio::Pedigree::Draw::PedRenderI;
 use strict;
-use Carp;
-
-sub _abstractDeath {
-  my $self = shift;
-  my $package = ref $self;
-  my $caller = (caller)[1];
-  
-  confess "Abstract method '$caller' defined in interface Bio::Pedigree::Draw::PedRenderI not implemented by pacakge $package. Not your fault - author of $package should be blamed!";
-}
+use Bio::Root::RootI;
+use vars qw(@ISA);
+@ISA = qw(Bio::Root::RootI);
 
 =head2 add_group_to_draw
 
@@ -87,7 +81,7 @@ sub _abstractDeath {
 =cut
 
 sub add_group_to_draw {
-    _abstractDeath();
+    shift->throw_not_implemented();
 }
 
 =head2 max_height
@@ -101,7 +95,7 @@ sub add_group_to_draw {
 =cut
 
 sub max_height {
-    _abstractDeath;
+    shift->throw_not_implemented();
 }
 
 =head2 max_width
@@ -116,7 +110,7 @@ sub max_height {
 =cut
 
 sub max_width {
-    _abstractDeath();
+    shift->throw_not_implemented();
 }
 
 
@@ -132,7 +126,7 @@ sub max_width {
 =cut
 
 sub write {
-    _abstractDeath();
+    shift->throw_not_implemented();
 }
 
 1;

@@ -66,14 +66,14 @@ package Bio::Pedigree::PedIO;
 use vars qw(@ISA @EXPORT $DEFAULTDIGITLEN);
 use strict;
 
-use Bio::Root::RootI;
+use Bio::Root::Root;
 use Symbol;
 
 require Exporter;
 
 BEGIN { $DEFAULTDIGITLEN = 4; }
 
-@ISA = qw(Bio::Root::RootI Exporter);
+@ISA = qw(Bio::Root::Root Exporter);
 @EXPORT = qw(_digitstr);
 
 =head2 new
@@ -127,8 +127,8 @@ sub _initialize {
  Title   : read_pedigree
  Usage   : my $pedigree = $pedio->read_pedigree(-pedfile => $pedfile,
 						-datfile => $datfile);
- Function: Instatiates a Bio::Pedigree object from a data source
- Returns : Bio::Pedigree object or undef on failed reading 
+ Function: Instatiates a Bio::Pedigree::Pedigree object from a data source
+ Returns : Bio::Pedigree::Pedigree object or undef on failed reading 
  Args    : -pedfile => pedigree input location
            -datfile => (if needed) marker data input location
            pedfile/datfile can be filenames or an input stream (GLOB)
@@ -152,7 +152,7 @@ sub read_pedigree {
            (some formats have the pedigree and marker data 
 	    stored in the same file rather than in 2 separate files)
  Returns : boolean of success, may throw exception on fatal error 
- Args    : -pedigree => Bio::Pedigree object
+ Args    : -pedigree => Bio::Pedigree::Pedigree object
            -pedfile => pedigree output location
            -datfile => (if needed) marker data output location
            pedfile/datfile can be filenames or an output stream (GLOB)

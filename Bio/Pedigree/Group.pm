@@ -81,9 +81,9 @@ use strict;
 
 use Bio::Pedigree::GroupI;
 use Tie::IxHash;
-use Bio::Root::RootI;
+use Bio::Root::Root;
 
-@ISA = qw(Bio::Pedigree::GroupI Bio::Root::RootI );
+@ISA = qw(Bio::Root::Root Bio::Pedigree::GroupI);
 
 BEGIN { 
     $DEFAULTTYPE = 'FAMILY';

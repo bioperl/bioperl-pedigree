@@ -12,7 +12,7 @@
 
 =head1 NAME
 
-Bio::Pedigree::Result - DESCRIPTION of Object
+Bio::Pedigree::Result - Allele storage object
 
 =head1 SYNOPSIS
 
@@ -63,10 +63,9 @@ package Bio::Pedigree::Result;
 use vars qw(@ISA);
 use strict;
 use Bio::Pedigree::ResultI;
-use Bio::Root::RootI;
+use Bio::Root::Root;
 
-
-@ISA = qw(Bio::Pedigree::ResultI Bio::Root::RootI);
+@ISA = qw(Bio::Root::Root Bio::Pedigree::ResultI );
 
 =head2 new
 

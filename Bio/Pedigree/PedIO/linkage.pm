@@ -62,7 +62,7 @@ Internal methods are usually preceded with a _
 package Bio::Pedigree::PedIO::linkage;
 use vars qw(@ISA);
 use strict;
-use Bio::Pedigree;
+use Bio::Pedigree::Pedigree;
 use Bio::Pedigree::Group;
 use Bio::Pedigree::Person;
 use Bio::Pedigree::Marker;
@@ -76,7 +76,7 @@ use Bio::Pedigree::PedIO;
  Title   : read_pedigree
  Usage   : my $ped = $stream->read_pedigree
  Function: Read the pedigree from the stream and instantiate an object 
- Returns : Bio::Pedigree object
+ Returns : Bio::Pedigree::Pedigree object
  Args    : none
 
 =cut
@@ -87,7 +87,7 @@ sub read_pedigree{
        ! $self->_initialize_datfh(@args) ) {
        $self->throw("Must specify both pedigree and marker data input files for marker format")
    }
-   my $pedigree = new Bio::Pedigree;   
+   my $pedigree = new Bio::Pedigree::Pedigree();   
    my $line;
    # skip leading whitespace lines
    while( defined($line = $self->_readline_dat) && $line !~ /\S/ ){}
@@ -209,7 +209,7 @@ sub read_pedigree{
            (some formats have the pedigree and marker data 
 	    stored in the same file rather than in 2 separate files)
  Returns : boolean of success, may throw exception on fatal error 
- Args    : -pedigree => Bio::Pedigree object
+ Args    : -pedigree => Bio::Pedigree::Pedigree object
            -pedfile => pedigree output location
            -datfile => (if needed) marker data output location
            pedfile/datfile can be filenames or an output stream (GLOB)

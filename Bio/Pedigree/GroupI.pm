@@ -12,7 +12,7 @@
 
 =head1 NAME
 
-Bio::Pedigree::GroupI - DESCRIPTION of Object
+Bio::Pedigree::GroupI - Group Interface definition
 
 =head1 SYNOPSIS
 
@@ -63,15 +63,9 @@ Internal methods are usually preceded with a _
 
 package Bio::Pedigree::GroupI;
 use strict;
-use Carp;
-
-sub _abstractDeath {
-  my $self = shift;
-  my $package = ref $self;
-  my $caller = (caller)[1];
-  
-  confess "Abstract method '$caller' defined in interface Bio::Pedigree::GroupI not implemented by pacakge $package. Not your fault - author of $package should be blamed!";
-}
+use Bio::Root::RootI;
+use vars qw(@ISA);
+@ISA = qw(Bio::Root::RootI);
 
 =head2 add_Person
 
@@ -88,7 +82,7 @@ sub _abstractDeath {
 =cut
 
 sub add_Person{
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
 =head2 remove_Person
@@ -108,7 +102,7 @@ sub add_Person{
 =cut
 
 sub remove_Person{
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
 =head2 num_of_people
@@ -122,7 +116,7 @@ sub remove_Person{
 =cut
 
 sub num_of_people{
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
 =head2 each_Person
@@ -141,7 +135,7 @@ sub num_of_people{
 =cut
 
 sub each_Person{
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
 =head2 get_Person
@@ -155,7 +149,7 @@ sub each_Person{
 =cut
 
 sub get_Person{
-    $_[0]->_abstractDeath();
+    shift->throw_not_implemented();
 }
 
 =head2 delete_Marker
@@ -171,7 +165,7 @@ sub get_Person{
 =cut
 
 sub delete_Marker{
-    $_[0]->_abstractDeath();
+    shift->throw_not_implemented();
 }
 
 =head2 center
@@ -185,7 +179,7 @@ sub delete_Marker{
 =cut
 
 sub center{
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
 =head2 groupid
@@ -199,7 +193,7 @@ sub center{
 =cut
 
 sub groupid {
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
 =head2 center_groupid
@@ -231,7 +225,7 @@ sub center_groupid{
 =cut
 
 sub description {
-    $_[0]->_abstractDeath;
+    shift->throw_not_implemented();
 }
 
 =head2 type
@@ -249,7 +243,7 @@ sub description {
 =cut
 
 sub type {
-    $_[0]->_abstractDeath();
+    shift->throw_not_implemented();
 }
 
 =head2 Algorithms
@@ -272,7 +266,7 @@ sub type {
 =cut
 
 sub calculate_relationships {
-    _abstractDeath();
+    shift->throw_not_implemented();
 }
 
 =head2 find_founders
@@ -291,7 +285,7 @@ sub calculate_relationships {
 =cut
 
 sub find_founders {
-    _abstractDeath();
+    shift->throw_not_implemented();
 }
 
 1;

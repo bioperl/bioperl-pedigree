@@ -63,11 +63,11 @@ package Bio::Pedigree::Draw::GD;
 use vars qw(@ISA $DEFAULTTYPE);
 use strict;
 
-use Bio::Root::RootI;
+use Bio::Root::Root;
 use Bio::Pedigree::Draw::GraphicsI;
 use GD;
 
-@ISA = qw(Bio::Pedigree::Draw::GraphicsI Bio::Root::RootI );
+@ISA = qw(Bio::Root::Root Bio::Pedigree::Draw::GraphicsI  );
 $DEFAULTTYPE = 'png';
 
 =head2 new

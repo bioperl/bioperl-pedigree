@@ -12,7 +12,7 @@
 
 =head1 NAME
 
-Bio::Pedigree::Person - DESCRIPTION of Object
+Bio::Pedigree::Person - An individual in a Family or Group
 
 =head1 SYNOPSIS
 
@@ -64,9 +64,9 @@ use vars qw(@ISA);
 use strict;
 use Bio::Pedigree::PersonI;
 use Tie::IxHash;
-use Bio::Root::RootI;
+use Bio::Root::Root;
 
-@ISA = qw(Bio::Pedigree::PersonI Bio::Root::RootI );
+@ISA = qw(Bio::Root::Root Bio::Pedigree::PersonI);
 
 
 # explictly using fatherid and motherid instead of mother/father to 

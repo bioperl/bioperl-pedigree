@@ -43,13 +43,13 @@ methods. Internal methods are usually preceded with a _
 package Bio::Pedigree::Marker;
 use vars qw(@ISA %MARKERTYPES);
 use strict;
-use Bio::Root::RootI;
+use Bio::Root::Root;
 use Bio::Pedigree::MarkerI;
 # Bio::Root::RootI is part of the bioperl project
 # this module provides basic error handling and 
 # argument handling 
 
-@ISA = qw(Bio::Pedigree::MarkerI Bio::Root::RootI);
+@ISA = qw(Bio::Root::Root Bio::Pedigree::MarkerI );
 
 BEGIN { 
     %MARKERTYPES = ( 'DISEASE'         => 1,

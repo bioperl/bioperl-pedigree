@@ -67,7 +67,7 @@ use vars qw(@ISA);
 use strict;
 
 use Bio::Root::RootI;
-use Bio::Pedigree;
+use Bio::Pedigree::Pedigree;
 use Bio::Pedigree::Group;
 use Bio::Pedigree::Person;
 use Bio::Pedigree::PedIO;
@@ -103,7 +103,7 @@ use Bio::Pedigree::Result;
 sub read_pedigree {
     my ($self,@args) = @_;
     $self->_initialize_pedfh(@args); # defaults to stdin if no pedfile is specified
-    my $pedigree = new Bio::Pedigree;
+    my $pedigree = new Bio::Pedigree::Pedigree;
     my ($line,$nMarkers, $nFams,$date,@com,$comment);    
 
     # skip blank lines
@@ -299,7 +299,7 @@ sub read_pedigree {
            (some formats have the pedigree and marker data 
 	    stored in the same file rather than in 2 separate files)
  Returns : boolean of success, may throw exception on fatal error 
- Args    : -pedigree => Bio::Pedigree object
+ Args    : -pedigree => Bio::Pedigree::Pedigree object
            -pedfile / -pedfh => pedigree output location
            -datfile / -datfh => (if needed) marker data output location
            (datfile not needed for lapis format)
@@ -313,7 +313,7 @@ sub write_pedigree {
 
     my ($pedigree) = $self->_rearrange([qw(PEDIGREE)], @args);
     if( !defined $pedigree || !ref($pedigree) || 
-	!$pedigree->isa('Bio::Pedigree') ) {
+	!$pedigree->isa('Bio::Pedigree::Pedigree') ) {
 	$self->warn("Trying to write a pedigree without passing in a pedigree object!");
 	return 0;
     }

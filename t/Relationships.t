@@ -8,7 +8,10 @@ BEGIN {
     plan tests => $NUMTESTS;
 }
 
-use Bio::Pedigree;
+END { 
+    unlink('test.xml');
+}
+use Bio::Pedigree::Pedigree;
 use Bio::Pedigree::Group;
 use Bio::Pedigree::PedIO;
 use Bio::Root::IO;

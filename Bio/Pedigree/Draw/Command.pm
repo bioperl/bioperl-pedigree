@@ -64,11 +64,11 @@ package Bio::Pedigree::Draw::Command;
 use vars qw(@ISA $DEFAULTCOLOR $DEFAULTLINEWIDTH) ;
 use strict;
 
-use Bio::Root::RootI;
+use Bio::Root::Root;
 $DEFAULTLINEWIDTH = 1;
 $DEFAULTCOLOR = 'BLACK';
 
-@ISA = qw(Bio::Root::RootI );
+@ISA = qw(Bio::Root::Root );
 
 sub new {
   my($class,@args) = @_;
