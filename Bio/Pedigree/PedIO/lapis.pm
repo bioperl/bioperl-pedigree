@@ -303,7 +303,7 @@ sub read_pedigree {
            -pedfile / -pedfh => pedigree output location
            -datfile / -datfh => (if needed) marker data output location
            (datfile not needed for lapis format)
-    
+
 =cut
 
 sub write_pedigree {

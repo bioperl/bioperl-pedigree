@@ -78,6 +78,7 @@ use Bio::Root::RootI;
  Args    : All fields are required unless specified as optional
             -name     => unique name for this variation.
             -alleles  => (optional) array ref of alleles to initialize object 
+
 =cut
 
 sub new {

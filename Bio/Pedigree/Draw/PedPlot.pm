@@ -15,13 +15,12 @@
 Bio::Pedigre::Draw::PedPlot - An object to plot pedigrees
 
 =head1 SYNOPSIS
-{
+
     use Bio::Pedigree::Draw::PedPlot;
     # get a Bio::Pedigree somehow
     my $plotter = new Bio::Pedigree::Draw::PedPlot(-drawingengine => $de);
     $plotter->add_group_to_draw($group,$dxmarker);
     $plotter->write();
-}
 
 =head1 DESCRIPTION
 
@@ -106,13 +105,14 @@ sub new {
  Usage   : $renderer->add_group_to_draw($group,$marker)
  Function: Draws a group on a page, can be called multiple times
            and will insure that no group overwrites another.
-           
+
            Data is not final until renderer object is closed 
            (data is synced out to disk/filestream at that point).
  Returns : none 
  Args    : group to draw
            marker which will determine affection status (if not defined 
            affection status will not be reported)
+
 =cut
 
 sub add_group_to_draw {

@@ -77,7 +77,7 @@ sub _abstractDeath {
  Usage   : $renderer->add_group_to_draw($group,$marker)
  Function: Draws a group on a page, can be called multiple times
            and will insure that no group overwrites another.
-           
+
            Data is not final until renderer object is closed 
            (data is synced out to disk/filestream at that point).
  Returns : none 

@@ -79,7 +79,7 @@ BEGIN { $DEFAULTDIGITLEN = 4; }
  Usage   : do not use this module directly it is an interface
  Function: initializes a PedIO object, constructor for shared 
            data initialization.
-          
+
            IO is initialized in the read/write methods since 
            a single stream can really only support one pedigree
            at a time.

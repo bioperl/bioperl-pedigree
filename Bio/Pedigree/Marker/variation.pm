@@ -73,7 +73,7 @@ use Bio::PrimarySeq;
 			     -fwdflank => $seqfwd,
 			     -revflank => $seqrev,
 			     );
-						  
+
  Function: build a Bio::Pedigree::Variation object
  Returns : Bio::Pedigree::Variation
  Args    : All fields are required unless specified as optional
@@ -91,6 +91,7 @@ use Bio::PrimarySeq;
            -revflank => Bio::PrimarySeqI object or DNA string for the
 			reverse flanking sequence of the marker
 			(optional)
+
 =cut
 
 sub _initialize { 
@@ -292,6 +293,7 @@ sub known_alleles {
  Returns : none
  Args    : name  => Allele name 
            freq  => (optional) allele frequency     
+
 =cut
 
 sub add_allele{

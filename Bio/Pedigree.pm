@@ -18,7 +18,6 @@ which there are results.
 
 =head1 SYNOPSIS
 
-{
     use Bio::Pedigree;
     use Bio::Pedigree::PedIO;
     # get a Bio::Pedigree object somehow (PedIO system typically)
@@ -27,7 +26,7 @@ which there are results.
 
     print "date is ", $pedigree->date, "\n";
     print "comment is ", $pedigree->comment ,"\n";
-    
+
     print "markers are :\n";
     foreach my $markername ( $pedigree->each_Marker('name') ) {
 	print "$markername\n";
@@ -38,7 +37,7 @@ which there are results.
 	    print $person->personid, " ", $person->gender, "\n";
 	}
     }
-}
+
 
 =head1 DESCRIPTION
 
@@ -399,6 +398,7 @@ sub comment{
  Args    : Type of warning to use 'warnOnError', 'failOnError', or
            do not report warnings.
            See also L<Bio::Pedigree::Group>
+
 =cut
 
 sub calculate_all_relationships {

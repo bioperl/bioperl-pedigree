@@ -19,7 +19,6 @@ Bio::Pedigree::PersonI - Interface defining the methods for a Person in a Pedigr
     # get a PersonI object somehow
     print "id is ", $person->personid, " father id is ", $person->fatherid, 
           " motherid is ", $person->motherid, "\n";
-   
 
 =head1 DESCRIPTION
 
@@ -161,6 +160,7 @@ sub displayid{
            boolean if existing results should be overwritten
  Throws  : Exception if a result with the name $result->name  already exists
            unless $overwrite is true
+
 =cut
 
 sub add_Result{

@@ -108,6 +108,7 @@ BEGIN {
             -type     => 'FAMILY' or 'GROUP' - 'FAMILY' by default
             -people   => (optional) initial people arrayref to initialize
                          object with
+
 =cut
 
 sub new {
@@ -231,6 +232,7 @@ sub num_of_people{
  Args    : (optional) 'id' will cause method to only return a list of ids
            for the people stored within the group rather than the
            Bio::Pedigree::PersonI objects
+
 =cut
 
 sub each_Person{
@@ -305,6 +307,7 @@ sub center{
  Args    : integer (optional) integer to set the group id to
  Note    : We try and be explicit about what type of id we have here
            to avoid future confusion with databaseids.
+
 =cut
 
 sub groupid {

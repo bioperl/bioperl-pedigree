@@ -80,6 +80,7 @@ $DEFAULTTYPE = 'png';
  Args    : -fh   => filehandle to write to
            -type => format to use 'png' or 'gif' are supported by GD
                     only png depending on your version of GD
+
 =cut
 
 sub new {
@@ -223,6 +224,7 @@ sub type{
            ending   Y point
            width of line (in points)
            color of line (string)
+
 =cut
 
 sub draw_line {
@@ -246,6 +248,7 @@ sub draw_line {
            width of line (in points)
            color of line  (string)
            box fill color (string)
+
 =cut
 
 sub draw_box {
@@ -274,6 +277,7 @@ sub draw_box {
            width of line (in points)
            color of line   (string)
            oval fill color (string)
+
 =cut
 
 sub draw_oval {

@@ -17,9 +17,7 @@ Bio::Pedigree::GroupI - DESCRIPTION of Object
 =head1 SYNOPSIS
 
     # get a Group object somehow
-     
     print "group is ", $group->center, " ", $group->groupid, "\n";
-    
 
 =head1 DESCRIPTION
 
@@ -86,6 +84,7 @@ sub _abstractDeath {
                        id.
  Throws  : Exception if a person with the id $person->id  already exists
            unless $overwrite is true
+
 =cut
 
 sub add_Person{
@@ -138,6 +137,7 @@ sub num_of_people{
  Args    : (optional) 'id' will cause method to only return a list of ids
            for the people stored within the group rather than the
            Bio::Pedigree::PersonI objects
+
 =cut
 
 sub each_Person{
@@ -268,6 +268,7 @@ sub type {
            'failOnError' - to throw and exception when an error is found
            passing anything else (or no argument) will cause method to 
            update errors quietly
+
 =cut
 
 sub calculate_relationships {
