@@ -40,7 +40,7 @@ my @r = ( new Bio::Pedigree::Result(-name    => 'D1S234',
 
 my @p;
  
-push @p, ( new Bio::Pedigree::Person(-personid => 1,
+push @p, ( new Bio::Pedigree::Person(-person_id => 1,
 				     -father => 0,
 				     -mother => 0,
 				     -gender   => 'M',
@@ -51,7 +51,7 @@ push @p, ( new Bio::Pedigree::Person(-personid => 1,
        new Bio::Pedigree::Result(-name    => 'CFDX',
 				 -alleles => ['U'] ),		
        );
-push @p, ( new Bio::Pedigree::Person(-personid => 2,
+push @p, ( new Bio::Pedigree::Person(-person_id => 2,
 				     -father   => 0,
 				     -mother   => 0,
 				     -gender   => 'F',
@@ -63,7 +63,7 @@ push @p, ( new Bio::Pedigree::Person(-personid => 2,
 				 -alleles => ['A'] ),		
        );
 
-push @p, ( new Bio::Pedigree::Person(-personid => 3,
+push @p, ( new Bio::Pedigree::Person(-person_id => 3,
 				     -father   => 1,
 				     -mother   => 2,
 				     -gender   => 'M',

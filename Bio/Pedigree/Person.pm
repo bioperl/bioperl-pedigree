@@ -140,9 +140,9 @@ sub new {
   # initialize some containers
   $self->{'_results'} = {}; # results are hashed by name
   # parse the arguments
-  my (%ids,%rels, $personid,$gender, $displayid,$proband);
+  my (%ids,%rels, $person_id,$gender, $displayid,$proband);
   
-  ($personid, 
+  ($person_id, 
    $rels{'father'}, $ids{'father'}, 
    $rels{'mother'}, $ids{'mother'}, 
    $rels{'child'},  $ids{'child'},
@@ -161,9 +161,9 @@ sub new {
 				     )], @args);
   
   
-  if( ! defined $personid ) {
-      $self->throw("Must specify a personid");
-  } else { $self->person_id($personid) }
+  if( ! defined $person_id ) {
+      $self->throw("Must specify a person_id");
+  } else { $self->person_id($person_id) }
   
   foreach my $rel ( qw(father mother child patsib matsib ) ) {
       if( $rels{$rel} ) { 
@@ -300,7 +300,7 @@ sub gender{
  Title   : display_id
  Usage   : my $dispylid = $person->display_id
  Function: Returns the display id for a person which is more informative
-            than the personid (ie personid is typically the order in the family
+            than the person_id (ie person_id is typically the order in the family
             while display_id might be the id code for individual like : 1001),
             or perhaps a string.  It is expected to be unique within a 
             family/group.
