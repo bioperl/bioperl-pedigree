@@ -113,7 +113,7 @@ sub father_id{
 
 =cut
 
-sub motherid{
+sub mother_id{
     shift->throw_not_implemented();
 }
 

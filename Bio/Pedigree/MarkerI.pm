@@ -160,20 +160,26 @@ sub get_Allele_Frequencies{
     $self->throw_not_implemented();
 }
 
-=head2 num_of_result_alleles
 
- Title   : num_of_result_alleles
- Usage   : my $num_alleles_for_result = $marker->num_of_result_alleles;
- Function: returns the number of result alleles for a marker - entirely
-           dependant on the marker type.  This is so we can code code 
-           phenotypic data as markers as well (such as Age of Onset, 
-	   Age of Exam) by basically extending the ped/linkage format
-           for this..
-            
- Returns : Either '1' or '2' in almost all cases
+=head2 get_Allele_range
+
+ Title   : get_Allele_range
+ Usage   : my ($min,$max) = $marker->get_Allele_range;
+           my $range = $marker->get_Allele_range; $min = $range->[0];
+
+ Function: If the alleles are number return the Allele range (min-max)
+
+ Returns : Array of min,max in array context or else arrayref of min,max.
  Args    : none
 
+
 =cut
+
+sub get_Allele_range{
+   my ($self) = @_;
+   $self->throw_not_implemented();
+}
+
 
 =head2 Inherited from Bio::PopGen::MarkerI
 
