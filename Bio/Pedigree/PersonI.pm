@@ -20,6 +20,7 @@ Bio::Pedigree::PersonI - Interface defining the methods for a Person in a Pedigr
     print "id is ", $person->personid, " father id is ", $person->fatherid, 
           " motherid is ", $person->motherid, "\n";
    
+
 =head1 DESCRIPTION
 
 This interface defines the minimum methods required to have a Person

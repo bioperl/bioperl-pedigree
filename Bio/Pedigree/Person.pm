@@ -101,6 +101,7 @@ use Bio::Root::RootI;
             -proband   => (optional) boolean if person is proband
             -results   => (optional) array ref of results to initialize this
                           person with.
+
 =cut
 
 sub new {
@@ -187,6 +188,26 @@ sub fatherid{
     return $self->{'_fatherid'};
 }
 
+=head2 father
+
+ Title   : father
+ Usage   : $obj->father($newval)
+ Function: 
+ Returns : value of father
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub father{
+   my ($obj,$value) = @_;
+   if( defined $value) {
+      $obj->{'father'} = $value;
+    }
+    return $obj->{'father'};
+
+}
+
 =head2 motherid
 
  Title   : motherid
@@ -203,6 +224,26 @@ sub motherid{
 	$self->{'_motherid'} = $value;
     }
     return $self->{'_motherid'};
+}
+
+=head2 mother
+
+ Title   : mother
+ Usage   : $obj->mother($newval)
+ Function: 
+ Returns : value of mother
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub mother{
+   my ($obj,$value) = @_;
+   if( defined $value) {
+      $obj->{'mother'} = $value;
+    }
+    return $obj->{'mother'};
+
 }
 
 =head2 gender
@@ -262,6 +303,7 @@ sub displayid{
            boolean if existing results should be overwritten
  Throws  : Exception if a result with the name $result->name  already exists
            unless $overwrite is true
+
 =cut
 
 sub add_Result{
@@ -373,6 +415,25 @@ sub patsibid{
     return $self->{'_patsibid'};
 }
 
+=head2 patsib
+
+ Title   : patsib
+ Usage   : $obj->patsib($newval)
+ Function: 
+ Returns : value of patsib
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub patsib{
+   my ($obj,$value) = @_;
+   if( defined $value) {
+      $obj->{'patsib'} = $value;
+    }
+    return $obj->{'patsib'};
+}
+
 =head2 matsibid
 
  Title   : matsibid
@@ -391,6 +452,24 @@ sub matsibid{
     return $self->{'_matsibid'};
 }
 
+=head2 matsib
+
+ Title   : matsib
+ Usage   : $obj->matsib($newval)
+ Function: 
+ Returns : value of matsib
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub matsib{
+   my ($obj,$value) = @_;
+   if( defined $value) {
+      $obj->{'matsib'} = $value;
+    }
+    return $obj->{'matsib'};
+}
 
 =head2 childid
 
@@ -408,6 +487,25 @@ sub childid{
 	$self->{'_childid'} = $id;
     }
     return $self->{'_childid'};
+}
+
+=head2 child
+
+ Title   : child
+ Usage   : $obj->child($newval)
+ Function: 
+ Returns : value of child
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub child{
+   my ($obj,$value) = @_;
+   if( defined $value) {
+      $obj->{'child'} = $value;
+    }
+    return $obj->{'child'};
 }
 
 =head2 pid
