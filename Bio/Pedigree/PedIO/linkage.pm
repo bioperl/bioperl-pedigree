@@ -227,7 +227,7 @@ sub write_pedigree {
     
     my ($pedigree) = $self->_rearrange([qw(PEDIGREE)],@args);
     # write the dat file first
-    my @markers = $pedigree->each_Marker;
+    my @markers = $pedigree->get_Markers;
     my $fh = $self->_datfh;
     $fh->_print(sprintf("%2d %d %d %d\n",scalar @markers, 0,0,5));
     $fh->_print("0 0.0 0.0 0\n"); # intricacies of the dat format 
@@ -262,23 +262,24 @@ sub write_pedigree {
 		      'U' => 0);
     $pedigree->calculate_all_relationships;
     $fh = $self->_pedfh;
-    foreach my $group ( $pedigree->each_Group ) {
+    foreach my $group ( $pedigree->get_Groups ) {
 	my $personcount = 1;
 	foreach my $person ( $group->each_Person ) {
 	    $personremap{$person->person_id} = $personcount++;
 	    $fh->_print(sprintf("%s %2d %2d %2d %2d %2d %2d %d %d ",
-				      $group->group_id, 
-				      $personremap{$person->person_id},
-				      $personremap{$person->father_id},
-				      $personremap{$person->mother_id},
-				      $personremap{$person->patsib_id},
-				      $personremap{$person->matsib_id},
-				      $gendermap{$person->gender},
-				      $person->proband
-				      ));
-	    foreach my $result ( $group->each_Result ) {
-		$fh->_print(join(' ', map { sprintf("%5s ")} 
-				       $result->alleles));
+				$group->group_id, 
+				$personremap{$person->person_id},
+				$personremap{$person->father_id},
+				$personremap{$person->mother_id},
+				$personremap{$person->patsib_id},
+				$personremap{$person->matsib_id},
+				$gendermap{$person->gender},
+				$person->proband
+				));
+	    print STDERR "here\n";
+	    foreach my $g ( $group->get_Genotype ) {
+		$fh->_print(join(' ', map { sprintf("%5s ",$_) } 
+				 $g->get_Alleles));
 	    }	    
 	    $fh->_print(sprintf("ID=%s CTR=%s", $person->display_id,
 				      $group->center));

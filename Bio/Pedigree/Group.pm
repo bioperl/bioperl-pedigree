@@ -315,6 +315,19 @@ sub type {
     return $self->{'_type'};
 }
 
+=head2 center_groupid
+
+ Title   : center_groupid
+ Usage   : my $id = $group->center_groupid;
+ Function: Convience function which returns the string of
+           the tuple "center groupid" - which should be unique
+           for a data source.
+ Returns : string
+ Args    : none
+
+
+=cut
+
 =head2 Algorithms
 
 =cut

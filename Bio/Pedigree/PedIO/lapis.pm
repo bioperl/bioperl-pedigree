@@ -325,8 +325,8 @@ sub write_pedigree {
 	$self->warn("Trying to write a pedigree without passing in a pedigree object!");
 	return 0;
     }
-    my @fams = $pedigree->each_Group;
-    my @mkrs = $pedigree->each_Marker;
+    my @fams = $pedigree->get_Groups;
+    my @mkrs = $pedigree->get_Markers;
     my $fh = $self->_pedfh;
     # print header line
     $fh->_print( sprintf("%2d %4d  %s %s\n\n", 
@@ -353,7 +353,7 @@ sub write_pedigree {
 	    }
 	    $fh->_print( join( " ", @liabs), "\n" );
 	} elsif( uc($marker->type) eq 'VARIATION' ) {
-	    my @alleles = $marker->known_alleles;
+	    my @alleles = $marker->get_Alleles();
 	    # print marker line
 	    $fh->_print( sprintf("%2d %2d  %s %s\n",
 				       $marker->type_code,
@@ -361,9 +361,10 @@ sub write_pedigree {
 				       $marker->name,
 				       $marker->description));
 	    my (@a,@f);
-	    foreach my $allele ( @alleles ){
+	    my %af = $marker->get_Allele_Frequencies;
+	    foreach my $allele ( sort keys %af ){
 		push @f, sprintf("%6.4f",
-				 $marker->get_allele_frequency($allele));
+				 $af{$allele});
 		push @a, sprintf("%-6s",$allele);
 	    }
 	    $fh->_print(join(" ", @f), "\n");

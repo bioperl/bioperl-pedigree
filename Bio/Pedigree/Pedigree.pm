@@ -204,10 +204,10 @@ sub remove_Group{
    return 1;
 }
 
-=head2 each_Group
+=head2 get_Groups
 
- Title   : each_Group
- Usage   : my (@groups) = $pedigree->each_Group;
+ Title   : get_Groups
+ Usage   : my (@groups) = $pedigree->get_Groups;
  Function: returns the groups - in order 
  Returns : @array of strings or Bio::Pedigree::GroupI objects
  Args    : (optional) - if the string 'id' is passed in will
@@ -216,7 +216,7 @@ sub remove_Group{
 
 =cut
 
-sub each_Group{
+sub get_Groups{
    my ($self, $type) = @_;
    return  ( defined $type && $type eq 'id' ) ? keys %{$self->{'_groups'}} : 
        values %{$self->{'_groups'}};
@@ -298,10 +298,10 @@ sub remove_Marker{
    return 1;
 }
 
-=head2 each_Marker
+=head2 get_Markers
 
- Title   : each_Marker
- Usage   : my @markers = $pedigree->each_Marker;
+ Title   : get_Markers
+ Usage   : my @markers = $pedigree->get_Markers;
  Function: Returns a list of Markers or marker names stored 
            in the Pedigree object
  Returns : @array of Bio::Pedigree::MarkerI object or marker name strings 
@@ -311,7 +311,7 @@ sub remove_Marker{
 
 =cut
 
-sub each_Marker{
+sub get_Markers {
    my ($self,$name) = @_;
    return  ( defined $name && $name eq 'name' ) ? 
        keys %{$self->{'_markers'}} : 

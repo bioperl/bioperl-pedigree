@@ -159,7 +159,6 @@ sub read_pedigree{
 						-name    => $name,
 						-type    => 'variation',
 						-alleles => \%alleles);
-
 	} elsif( $type == 5 ) {
 	    $marker = new Bio::Pedigree::Marker(-verbose => $self->verbose,
 						-name    => $name,
@@ -195,7 +194,7 @@ sub read_pedigree{
 					       -proband   => $proband,
 					       );
 
-	foreach my $marker ( $pedigree->each_Marker ) {
+	foreach my $marker ( $pedigree->get_Markers ) {
 	    my @alleles = splice(@results, 0, $marker->num_result_alleles);
 	    my $result = new Bio::PopGen::Genotype(-marker_name => $marker->name,
 						   -alleles => [ @alleles]);
@@ -277,7 +276,7 @@ sub write_pedigree {
 		      'U' => 0);
     $pedigree->calculate_all_relationships;
     $fh = $self->_pedfh;
-    foreach my $group ( $pedigree->each_Group ) {
+    foreach my $group ( $pedigree->get_Groups ) {
 	my $personcount = 1;
 	foreach my $person ( $group->each_Person ) {
 	  $personremap{$person->person_id} = $personcount++;

@@ -139,7 +139,7 @@ sub write_pedigree {
 		      $pedigree->comment ? ("comment" => $pedigree->comment) :
 		      undef
 		      );
-    foreach my $marker ( $pedigree->each_Marker ) {
+    foreach my $marker ( $pedigree->get_Markers ) {
 	my %markertag = ( "name" => $marker->name,
 			  "type" => lc $marker->type,
 			  "display_name" => ($marker->display_name || 
@@ -188,7 +188,7 @@ sub write_pedigree {
     # now let's print the groups and individuals
     
 
-    foreach my $group ( $pedigree->each_Group ) {
+    foreach my $group ( $pedigree->get_Groups ) {
 	$writer->startTag("GROUP",
 			  "id"          => $group->group_id,
 			  "center"      => $group->center,
