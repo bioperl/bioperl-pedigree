@@ -209,7 +209,7 @@ sub each_Person{
     my @inds = $self->get_Individuals();
     my @ids;
     if( $id ) { 
-	return map { $_->unique_id } @inds;
+	return map { $_->person_id } @inds;
     } 
     return @inds;
 }
@@ -232,6 +232,7 @@ sub get_Person{
 	   return $p;
        }
    }
+   return undef;
 }
 
 =head2 remove_Marker
@@ -340,7 +341,7 @@ sub calculate_relationships {
    my $warntype = sub { print $_[0], "\n"};
    if( defined $warnings && $warnings ne '' ) {
        if( $warnings =~ /warnonerror/i ) { 
-	   print "assigning warntype\n";
+	   $self->warn("assigning warntype\n");
 	   $warntype = sub { $self->warn($_[0]) };
        } elsif ( $warnings =~ /failonerror/i ) {
 	   $warntype = sub { $self->throw($_[0]) };
@@ -373,16 +374,20 @@ sub find_founders {
     my ($self) = @_;
     # even if this is redundant - we want to be sure that everything is 
     # up to date wrt child pointers
-#    $self->calculate_relationships();
+    # $self->calculate_relationships();
     
     # find all the people who have no father or mother in the pedigree
     my %orphans;  # these will be indexed by their CHILD pointers
     foreach my $person ( $self->each_Person ){
-	if( $person->fatherid == 0 ) {
-	    if( $person->motherid != 0 ) {
-		$self->throw("Person ". $person->person_id. " has is malformed, they have a mother pointer of ". $person->motherid. " while their fatherid is 0");
+	print "person is ", $person->person_id, "\n";
+	if( $person->father_id == 0 ) {
+	    print "orphan: ", $person->person_id, "\n";
+	    if( $person->mother_id != 0 ) {
+		$self->throw("Person ". $person->person_id. " has is malformed, they have a mother pointer of ". $person->mother_id. " while their father_id is 0");
 	    }
-	    push @{$orphans{$person->childid}}, $person, 
+	    # we are indexing by their children to remove 
+	    # spouses
+	    push @{$orphans{$person->child_id}}, $person, 
 	}
     }
     
@@ -416,24 +421,35 @@ sub _helper_calculate_relationships {
     my $id = shift @ids;
     my $person = $group->get_Person($id);
     my $count = 0;
-    return 0 if( ! $person );
-    if( $person->fatherid ) {
-	if( ! $person->motherid ) { $group->throw("MotherID does not exist for individual $id, which does have a fatherid ".$person->fatherid); }
-	my $father = $group->get_Person($person->fatherid);
-	my $mother = $group->get_Person($person->motherid);	
+    return 0 unless( $person );
+    my ($fid,$mid) = ( $person->father_id,
+		       $person->mother_id);
+    if( $fid ) { # father id
+	unless( $mid ) { # mother id
+	    $group->throw("MotherID does not exist for individual $id, which does have a father_id ".$person->father_id); 
+	}
+
+	my $father = $group->get_Person($fid); # get full objects now
+	my $mother = $group->get_Person($mid); # for father and mother ptrs
+
+	# some verification about gender assignments for father/mother
 	if( $father->gender ne 'M' ) {
-	    $warntype->("Expected gender to be 'M' for ". $person->fatherid);
+	    $warntype->("Expected gender to be 'M' for ". $person->father_id);
 	    $father->gender('M');			
 	}
 	if( $mother->gender ne 'F' ) {
-	    $warntype->("Expected gender to be 'F' for ". $person->motherid);
+	    $warntype->("Expected gender to be 'F' for ". $person->mother_id);
 	    $mother->gender('F');
 	}
+	# set the pointers
 	$person->father($father);
 	$person->mother($mother);
+	
 	$count += $group->_add_child($father, $id);
 	$count += $group->_add_child($mother, $id);	
-     }
+    } else { 
+	# print "not processing ",$person->person_id, " as they have no parents\n";
+    }
     # this will try and hit every node - as it will go through the whole 
     # list of individuals
     # this could be computationally expensive so we may need to
@@ -448,18 +464,17 @@ sub _add_child {
     return 0 unless $child;
     my $childobj = $group->get_Person($child);
     $group->throw("Could not find person with id $child") unless defined $childobj;
-    if( ! $parent->childid ) {
-	$parent->childid($child);
+    unless( $parent->child ) {
 	$parent->child($childobj);
 	return 1;
     } else {
-#	return 0 if( $parent->childid == $child);
-	my $firstchild = $group->get_Person($parent->childid);
+#	return 0 if( $parent->child_id == $child);
+	my $firstchild = $group->get_Person($parent->child_id);
 	$parent->child($firstchild);
 	if( ! defined $firstchild ) {
 	    $group->throw("Person ". $parent->person_id. 
 			  " has reference to 1st child as ". 
-			  $parent->childid . " which does not exist in this group");
+			  $parent->child_id . " which does not exist in this group");
 	}
 	return $group->_add_sib($firstchild, $child, 
 				$parent->gender eq 'M');
@@ -471,22 +486,20 @@ sub _add_child {
 sub _add_sib {
     my ($group,$sib,$id, $paternalsib) = @_;
     return 0 if( ! defined $sib || $sib->person_id == $id );
-    my $sibname = ( $paternalsib ) ? 'patsibid' : 'matsibid';
-    my $sibobj = ( $paternalsib ) ? 'patsib' : 'matsib';
-    if( ! $sib->$sibname() ) {
-	$sib->$sibname($id);
-	my $personref = $group->get_Person($id);
-	$sib->$sibobj($personref);
+    my $sibtype = ( $paternalsib ) ? 'patsib' : 'matsib';
+    my $personref = $group->get_Person($id);
+    unless( $sib->relative($sibtype) ) {
+	$sib->relative($sibtype,$personref);
 	return 1;
     } else {
-	my $firstsib = $group->get_Person($sib->$sibname());
-	$sib->$sibobj($firstsib);
-	return 0 if ( $sib->$sibname() == $id);
+	my $firstsib = $group->get_Person($sib->relative_id($sibtype));
+	$sib->relative($sibtype,$personref);
+	return 0 if ( $sib->relative_id($sibtype) == $id);
 	
 	if( ! defined $firstsib) {
 	    $group->throw("Person ". $sib->person_id . 
-			  "has a reference to 1st $sibname as ".
-			  $sib->$sibname() . " which does not exist in this group");
+			  "has a reference to 1st $sibtype as ".
+			  $sib->relative_id($sibtype) . " which does not exist in this group");
 	}	
 	return $group->_add_sib($firstsib, $id, $paternalsib);	
     }

@@ -545,21 +545,19 @@ sub relative {
     my $rel = shift;
 
     # no forced validation of 'relationship'
-
     return unless defined $rel;
     # force lowercase
     $rel = lc($rel);
-
     if( @_ ) {
 	my $obj = shift;
 	if( ref($obj) &&
-	    $obj->isa('Bio::Pedigree::PersonI') ) {
-	    $self->{"_$rel"} = $obj;
+	    $obj->isa('Bio::Pedigree::PersonI') ) {	    
 	    $self->{"_$rel\_id"} = $obj->person_id;
+	    return $self->{"_$rel"} = $obj;
 	} else { 
 	    $self->throw("Need to provide a valid Bio::Pedigree::PersonI to $rel") }
     }
-    return $self->{'_$rel'};
+    return $self->{"_$rel"};
 }
 
 

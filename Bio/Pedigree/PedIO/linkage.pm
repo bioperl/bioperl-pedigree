@@ -82,7 +82,7 @@ use Bio::Pedigree::PedIO;
 
 sub read_pedigree{
    my ($self,@args) = @_;
-   if( ! $self->_initialize_fh(@args) != 2 ) {
+   if( $self->_initialize_fh(@args) != 2 ) {
        $self->throw("Must specify both pedigree and marker data input files for marker format");
    }
    # make this a factory object one day
@@ -173,21 +173,21 @@ sub read_pedigree{
 		-group_id =>$groupid,
 		-type     =>'FAMILY');
        }
-       my $person = new Bio::Pedigree::Person(-person_id => $id,
-					      -father   => $father,
-					      -mother   => $mother,
-					      -gender   => $gender,
-					      -child    => $child,
-					      -displayid  => $displayid,
-					      -patsib   => $patsib,
-					      -matsib   => $matsib,
-					      -proband  => $proband);
+       my $person = new Bio::Pedigree::Person(-person_id   => $id,
+					      -father_id   => $father,
+					      -mother_id   => $mother,
+					      -gender      => $gender,
+					      -child_id    => $child,
+					      -displayid   => $displayid,
+					      -patsib_id   => $patsib,
+					      -matsib_id   => $matsib,
+					      -proband     => $proband);
 
        foreach my $marker ( $pedigree->each_Marker ) {
 	   my @alleles = splice(@results, 0, $marker->num_result_alleles);
 	   my $result = new Bio::PopGen::Genotype(-marker_name => $marker->name,
 						  -alleles => [ @alleles]);
-	   $person->add_Result($result);
+	   $person->add_Genotype($result);
        }
        $groups{"$center\_$groupid"}->add_Person($person);
    }

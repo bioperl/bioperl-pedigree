@@ -119,7 +119,10 @@ sub read_pedigree {
 
 sub write_pedigree {
     my ($self,@args) = @_;
-    $self->_initialize_pedfh(@args);
+    if( ! $self->_initialize_fh(@args) ) {
+	$self->warn("could not initialize output filehandle\n");
+	return;
+    }
     my $outfh = new IO::File(">test.xml");
     my ($pedigree) = $self->_rearrange([qw(PEDIGREE)], @args);
     if( !defined $pedigree || !ref($pedigree) || 
@@ -208,10 +211,10 @@ sub write_pedigree {
 	    }
 	    $writer->startTag("PERSON", %persontags);
 			      
-	    foreach my $result ( $person->each_Result ) {
+	    foreach my $result ( $person->get_Genotypes ) {
 		$writer->startTag("RESULT", 
-				  "marker" => $result->name);
-		foreach my $allele ( $result->alleles ) {
+				  "marker" => $result->marker_name);
+		foreach my $allele ( $result->get_Alleles ) {
 		    $writer->startTag("ALLELE");
 		    $writer->characters($allele);
 		    $writer->endTag("ALLELE");

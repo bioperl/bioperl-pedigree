@@ -116,7 +116,7 @@ $person = $group->get_Person(8);
 ok ($person->father_id, 5);
 ok ( ! defined $person->father );
 
-$group->calculate_relationships;
+ok($group->calculate_relationships,9);
 ok ( $person->father );
 $person = $group->get_Person(8);
 ok ( $person->father->person_id, 5);

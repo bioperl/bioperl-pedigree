@@ -379,20 +379,20 @@ sub write_pedigree {
 #	my @dbled = $family->get_DoubledPersonIds(-type => 'id');
 	
 	$fh->_print(sprintf("%4s  %2s  %s %s %s %s\n",
-				  scalar @inds,
-				  0,
-				  #scalar @dbled, 
-				  $group->type,
-				  $group->group_id,
-				  $group->center,
-				  $group->description));
+			    scalar @inds,
+			    0,
+			    #scalar @dbled, 
+			    $group->type || '',
+			    $group->group_id || '',
+			    $group->center || '',
+			    $group->description || ''));
 	foreach my $person ( @inds ) {
 	    my @results;	    
 	    foreach my $marker ( @mkrs ) {
-		my $r = $person->get_Result($marker->name);
+		my $r = $person->get_Genotypes($marker->name);
 		foreach ( 0..( $marker->num_result_alleles - 1)) {
                     # default to 0 if we don't have a result for a marker
-		    my $allele = ( defined $r) ? ($r->alleles)[$_] : 0;
+		    my $allele = ( defined $r) ? ($r->get_Alleles)[$_] : 0;
 		    push @results, sprintf('%-3s', $allele);
 		}
 	    }
