@@ -81,7 +81,7 @@ sub new {
       $self->throw("Did not specify required startx or starty to Command");
   } else { 
       $self->startx($startx);
-      $self->startx($starty);      
+      $self->starty($starty);      
   }
   if( ! defined $linewidth ) {
       $linewidth = $DEFAULTLINEWIDTH;
@@ -110,6 +110,39 @@ sub execute {
    $self->throw("Must be implemented by subclass of Command");
 }
 
+=head2 shift_up
+
+ Title   : shift_up
+ Usage   : $command->shift_up($value);
+ Function: Shifts the command coordinates up
+ Returns : none
+ Args    : $value to add to the y-coordinates 
+
+=cut
+
+sub shift_up {
+   my ($self,$value) = @_;
+   return if ! $value;
+   $self->starty( $self->starty + $value);
+}
+
+=head2 shift_right
+
+ Title   : shift_right
+ Usage   : $command->shift_right($value)
+ Function: Shifts the command coordinates to the right
+ Returns : nothing 
+ Args    : $value to add to the x-coorindates
+
+
+=cut
+
+sub shift_right {
+   my ($self,$value) = @_;
+   return if ! $value;
+   $self->startx( $self->startx + $value);
+}
+
 =head2 startx
 
  Title   : startx
@@ -124,9 +157,9 @@ sub execute {
 sub startx{
     my ($obj,$value) = @_;
     if( defined $value) {
-	$obj->{'startx'} = $value;
+	$obj->{'_startx'} = $value;
     }
-    return $obj->{'startx'};
+    return $obj->{'_startx'};
 }
 
 =head2 starty
@@ -143,9 +176,9 @@ sub startx{
 sub starty{
     my ($obj,$value) = @_;
     if( defined $value) {
-	$obj->{'starty'} = $value;
+	$obj->{'_starty'} = $value;
     }
-    return $obj->{'starty'};
+    return $obj->{'_starty'};
 }
 
 =head2 linewidth
@@ -162,9 +195,9 @@ sub starty{
 sub linewidth{
     my ($obj,$value) = @_;
     if( defined $value) {
-	$obj->{'linewidth'} = $value;
+	$obj->{'_linewidth'} = $value;
     }
-    return $obj->{'linewidth'};
+    return $obj->{'_linewidth'};
 }
 
 =head2 color
@@ -180,10 +213,11 @@ sub linewidth{
 sub color{
     my ($obj,$value) = @_;
     if( defined $value) {
-	$obj->{'color'} = $value;
+	$obj->{'_color'} = $value;
     }
-    return $obj->{'color'};
+    return $obj->{'_color'};
 }
+
 
 # --- new Command --- #
 
@@ -227,6 +261,41 @@ sub execute {
 			$self->color);
 }
 
+=head2 shift_up
+
+ Title   : shift_up
+ Usage   : $command->shift_up($value);
+ Function: Shifts the command coordinates up
+ Returns : none
+ Args    : $value to add to the y-coordinates 
+
+=cut
+
+sub shift_up {
+   my ($self,$value) = @_;
+   $self->SUPER::shift_up($value);
+   return if ! $value;   
+   $self->endy( $self->endy + $value);
+}
+
+=head2 shift_right
+
+ Title   : shift_right
+ Usage   : $command->shift_right($value)
+ Function: Shifts the command coordinates to the right
+ Returns : nothing 
+ Args    : $value to add to the x-coorindates
+
+
+=cut
+
+sub shift_right {
+   my ($self,$value) = @_;
+   $self->SUPER::shift_right($value);
+   return if ! $value;
+   $self->endx( $self->endx + $value);
+}
+
 =head2 endx
 
  Title   : endx
@@ -241,9 +310,9 @@ sub execute {
 sub endx{
     my ($obj,$value) = @_;
     if( defined $value) {
-	$obj->{'endx'} = $value;
+	$obj->{'_endx'} = $value;
     }
-    return $obj->{'endx'};
+    return $obj->{'_endx'};
 }
 
 =head2 endy
@@ -260,9 +329,9 @@ sub endx{
 sub endy{
     my ($obj,$value) = @_;
     if( defined $value) {
-	$obj->{'endy'} = $value;
+	$obj->{'_endy'} = $value;
     }
-    return $obj->{'endy'};
+    return $obj->{'_endy'};
 }
 
 # --- new Command --- #
@@ -278,14 +347,14 @@ use Bio::Pedigree::Draw::Command;
 sub new {
     my ($class, @args) = @_;
     my $self = $class->SUPER::new(@args);
-    my ($endx,$endy,$fill) = $self->_rearrange([qw(ENDX ENDY 
+    my ($height, $width,$fill) = $self->_rearrange([qw(HEIGHT WIDTH 
 						   FILLCOLOR)],@args);  
 
-    if( ! defined $endx || ! defined $endy ) {
-	$self->throw("Must defined endx and endy in BoxCommand");
+    if( ! defined $height || ! defined $height ) {
+	$self->throw("Must defined height and width in BoxCommand");
     }
-    $self->endx($endx);
-    $self->endy($endy);
+    $self->height($height);
+    $self->width($width);
     if( ! defined $fill ) {
 	$fill = 'WHITE';
     }
@@ -306,48 +375,49 @@ sub new {
 sub execute {
    my ($self,$graphics) = @_;
    $graphics->draw_box($self->startx,$self->starty,
-			     $self->endx, $self->endy,
-			     $self->linewidth, $self->color,
-			     $self->fillcolor);
+		       $self->startx + $self->width, 
+		       $self->starty + $self->height,
+		       $self->linewidth, $self->color,
+		       $self->fillcolor);
 }
 
-=head2 endx
+=head2 height
 
- Title   : endx
- Usage   : $obj->endx($newval)
+ Title   : height
+ Usage   : $obj->height($newval)
  Function: 
- Returns : value of endx
+ Returns : value of height
  Args    : newvalue (optional)
 
 
 =cut
 
-sub endx{
+sub height{
    my ($obj,$value) = @_;
    if( defined $value) {
-      $obj->{'endx'} = $value;
+      $obj->{'_height'} = $value;
     }
-    return $obj->{'endx'};
+    return $obj->{'_height'};
 
 }
 
-=head2 endy
+=head2 width
 
- Title   : endy
- Usage   : $obj->endy($newval)
+ Title   : width
+ Usage   : $obj->width($newval)
  Function: 
- Returns : value of endy
+ Returns : value of width
  Args    : newvalue (optional)
 
 
 =cut
 
-sub endy{
+sub width{
    my ($obj,$value) = @_;
    if( defined $value) {
-      $obj->{'endy'} = $value;
+      $obj->{'_width'} = $value;
     }
-    return $obj->{'endy'};
+    return $obj->{'_width'};
 
 }
 
@@ -365,9 +435,9 @@ sub endy{
 sub fillcolor{
    my ($obj,$value) = @_;
    if( defined $value) {
-      $obj->{'fillcolor'} = $value;
+      $obj->{'_fillcolor'} = $value;
     }
-    return $obj->{'fillcolor'};
+    return $obj->{'_fillcolor'};
 }
 
 package Bio::Pedigree::Draw::OvalCommand;
@@ -381,14 +451,14 @@ use Bio::Pedigree::Draw::Command;
 sub new {
     my ($class, @args) = @_;
     my $self = $class->SUPER::new(@args);
-    my ($radx,$rady,$fill) = $self->_rearrange([qw(RADIUSX RADIUSY 
+    my ($height, $width,$fill) = $self->_rearrange([qw(HEIGHT WIDTH 
 						   FILLCOLOR)],@args);  
 
-    if( ! defined $radx || ! defined $rady ) {
-	$self->throw("Must defined radiusx and radiusy in OvalCommand");
+    if( ! defined $height || ! defined $width ) {
+	$self->throw("Must define height and width in OvalCommand");
     }
-    $self->radiusx($radx);
-    $self->radiusy($rady);
+    $self->height($height);
+    $self->width($width);
     if( ! defined $fill ) {
 	$fill = 'WHITE';
     }
@@ -411,11 +481,50 @@ sub execute {
    my ($self,$graphics) = @_;
    # adjust for startx to be the center of the circle not top left
    # as in boxes
-   $graphics->draw_oval($self->startx - $self->radiusx ,
-			      $self->starty - $self->radiusy,
-			      $self->radiusx, $self->radiusy,
-			      $self->linewidth, $self->color,
-			      $self->fillcolor);
+   $graphics->draw_oval($self->startx + ($self->width / 2), 
+			$self->starty + ($self->height/ 2),
+			$self->width,
+			$self->height,
+			$self->linewidth, $self->color,
+			$self->fillcolor);
+}
+
+=head2 height
+
+ Title   : height
+ Usage   : $obj->height($newval)
+ Function: 
+ Returns : value of height
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub height{
+   my ($obj,$value) = @_;
+   if( defined $value) {
+      $obj->{'_height'} = $value;
+    }
+    return $obj->{'_height'};
+}
+
+=head2 width
+
+ Title   : width
+ Usage   : $obj->width($newval)
+ Function: 
+ Returns : value of width
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub width{
+   my ($obj,$value) = @_;
+   if( defined $value) {
+      $obj->{'_width'} = $value;
+    }
+    return $obj->{'_width'};
 }
 
 =head2 fillcolor
@@ -432,9 +541,9 @@ sub execute {
 sub fillcolor{
    my ($obj,$value) = @_;
    if( defined $value) {
-      $obj->{'fillcolor'} = $value;
+      $obj->{'_fillcolor'} = $value;
     }
-    return $obj->{'fillcolor'};
+    return $obj->{'_fillcolor'};
 }
 
 
@@ -502,9 +611,9 @@ sub execute {
 sub fontsize{
    my ($obj,$value) = @_;
    if( defined $value) {
-      $obj->{'fontsize'} = $value;
+      $obj->{'_fontsize'} = $value;
     }
-    return $obj->{'fontsize'};
+    return $obj->{'_fontsize'};
 
 }
 
@@ -522,9 +631,28 @@ sub fontsize{
 sub direction{
    my ($obj,$value) = @_;
    if( defined $value) {
-      $obj->{'direction'} = $value;
+      $obj->{'_direction'} = $value;
     }
-    return $obj->{'direction'};
+    return $obj->{'_direction'};
+}
+
+=head2 text
+
+ Title   : text
+ Usage   : $obj->text($newval)
+ Function: 
+ Returns : value of text
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub text{
+   my ($obj,$value) = @_;
+   if( defined $value) {
+      $obj->{'_text'} = $value;
+    }
+    return $obj->{'_text'};
 }
 
 package Bio::Pedigree::Draw::Command;
