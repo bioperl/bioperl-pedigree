@@ -4,7 +4,7 @@ use Test;
 
 BEGIN { 
     use vars qw($NUMTESTS);
-    $NUMTESTS = 5;
+    $NUMTESTS = 3;
     plan tests => $NUMTESTS;
 }
 
@@ -21,6 +21,6 @@ my $pedigree = $pedio->read_pedigree(-pedfile => Bio::Root::IO->catfile('t','dat
 ok($pedigree->calculate_all_relationships(), 12);
 my ($group1) = $pedigree->each_Group;
 my $out = new Bio::Pedigree::PedIO(-format => 'xml');
-$out->write_pedigree(-pedfile  => '>test.xml',
-		     -pedigree => $pedigree);
+ok($out->write_pedigree(-pedfile  => '>test.xml',
+		     -pedigree => $pedigree));
 

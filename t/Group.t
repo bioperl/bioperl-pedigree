@@ -33,7 +33,7 @@ push @p, ( new Bio::Pedigree::Person(-personid => 1,
 				 -alleles => ['U'] ),		
        );
 push @p, ( new Bio::Pedigree::Person(-personid => 2,
-				     -fathe    => 0,
+				     -father   => 0,
 				     -mother   => 0,
 				     -gender   => 'F',
 				     -results  => [@r]) );
