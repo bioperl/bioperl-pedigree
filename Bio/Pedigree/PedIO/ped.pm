@@ -83,7 +83,8 @@ use Bio::Pedigree::PedIO;
 
 sub read_pedigree{
     my ($self,@args) = @_;
-    if( $self->_initialize_fh(@args) != 2 ) {
+#    if( $self->_initialize_fh(@args) != 2 ) {
+    if( $self->_initialize_fh(@args) < 1 ) {
 	$self->throw("Must specify pedigree data input files for marker format")
 	}
     my $pedigree = new Bio::Pedigree::Pedigree();
@@ -172,7 +173,8 @@ sub read_pedigree{
 
     my %groups;
     $fh = $self->_pedfh;
-    while( defined( $line = $fh->_readline) && $line =~ /\S/ ) {
+    while( defined( $line = $fh->_readline) ) {
+        next unless $line =~ /\S/;
 	$line =~ s/^\s+(\S+)/$1/;
 	my (@fields) = split(/\s+/,$line);
 

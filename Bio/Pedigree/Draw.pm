@@ -167,13 +167,19 @@ sub draw {
     }
     my $renderengine = $rendermodule->new(-verbose => $self->verbose);
     my @groups = $pedigree->get_Groups;    
+    my $group;
     if( $groupindex ) {
-        my $group = $groups[$groupindex];
+      if ( ref($groupindex) && $groupindex->isa('Bio::Pedigree::Group') ) {
+        $group = $groupindex;
+      }
+      else {
+        $group = $groups[$groupindex];
         if( ! defined $group ) { 
 	    $self->warn("no group valid for index $groupindex");
 	    return;
         }
-        $renderengine->add_group_to_draw($group, $marker->name, 1);
+     }
+     $renderengine->add_group_to_draw($group, $marker->name, 1);
     } else {      
 	foreach my $group ( @groups ) {
 	    $renderengine->add_group_to_draw($group, defined $marker ? $marker->name : '', 1);
