@@ -1,6 +1,7 @@
 # -*-Perl-*-
 
 use Test;
+use strict;
 
 BEGIN {
     use vars qw($NUMTESTS);

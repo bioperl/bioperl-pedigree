@@ -1,10 +1,11 @@
 # -*-Perl-*-
 
 use Test;
+use strict;
 
 BEGIN { 
     use vars qw($NUMTESTS);
-    $NUMTESTS = 3;
+    $NUMTESTS = 4;
     plan tests => $NUMTESTS;
 }
 use Bio::Pedigree;
@@ -61,3 +62,5 @@ ok ($pedigree);
 ok ($pedigree->num_of_groups, 1);
 
 ok ($pedigree->get_Group("DUK 1")->center_groupid, $group->center_groupid);
+
+ok ($pedigree->add_Group($group), 1 );

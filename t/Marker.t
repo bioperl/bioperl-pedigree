@@ -1,23 +1,33 @@
 # -*-Perl-*-
 
 use Test;
+use strict;
+
 BEGIN {
     use vars qw($NUMTESTS);
-    $NUMTESTS = 24;
+    $NUMTESTS = 27;
     plan tests => $NUMTESTS;
 }
-use Bio::Pedigree::Marker;
 
-my $variation = new Bio::Pedigree::Marker(-name => 'D1S123',
-				       -desc => 'Chrom 1 msat marker',
-				       -type => 'variation',
-				       -chrom => 1,
-				       -alleles => { 130  => 0.0319,
-						     132  => 0.1596,
-						     136  => 0.0851,
-						     138  => 0.2128,
-						     140  => 0.0532,
-						     143  => 0.4574 } );
+use Bio::Pedigree::Marker;
+use Bio::PrimarySeq;
+
+my $variation = new Bio::Pedigree::Marker
+    (-name => 'D1S123',
+     -desc => 'Chrom 1 msat marker',
+     -type => 'variation',
+     -chrom => 1,
+     -alleles => { 130  => 0.0319,
+		   132  => 0.1596,
+		   136  => 0.0851,
+		   138  => 0.2128,
+		   140  => 0.0532,
+		   143  => 0.4574 },
+     -display => 'D1S234-prod',
+     -fwdflank => new Bio::PrimarySeq(-seq     =>'CAGATAGGGATAG', 
+				      -moltype => 'dna',
+				      -id      => 'D1S234_pcrfwd'),
+     -revflank => 'GGATAGATAGTA' );
 
 ok($variation->isa('Bio::Pedigree::Marker') &&
    $variation->isa('Bio::Pedigree::Marker::variation')
@@ -31,6 +41,9 @@ ok( $variation->known_alleles, 6);
 ok( $variation->get_allele_frequency('130'), 0.0319);
 ok( $variation->remove_allele('140') );
 ok( $variation->known_alleles, 5);
+ok ($variation->upstream_flanking_seq->seq(), 'CAGATAGGGATAG');
+ok ($variation->dnstream_flanking_seq->seq(),  'GGATAGATAGTA');
+ok ($variation->display_name, 'D1S234-prod');
 
 my $dx = new Bio::Pedigree::Marker(-name => 'ALZAFF',
 				   -desc => 'Affected Alz',
