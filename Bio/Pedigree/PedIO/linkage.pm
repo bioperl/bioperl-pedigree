@@ -85,6 +85,7 @@ sub read_pedigree{
    if( $self->_initialize_fh(@args) != 2 ) {
        $self->throw("Must specify both pedigree and marker data input files for marker format");
    }
+   my @marker_order;
    # make this a factory object one day
    my $pedigree = new Bio::Pedigree::Pedigree();   
    my $line;
@@ -108,6 +109,7 @@ sub read_pedigree{
        $line =~ s/\#//g;
        my($type,$alleles, $name) = split(/\s+/,$line);       
 #       $name =~ s/\#//;
+       push @marker_order, $name;
        my $marker;
        if( $type == 1 ) { # dx marker
 	   my (@frequencies) = split(/\s+/,$fh->_readline);
@@ -120,7 +122,7 @@ sub read_pedigree{
 	   foreach ( 1..$liabct ) {
 	       $line = $fh->_readline;
 	       $line =~ s/^\s+(\S+)/$1/;
-	       $liabs{$_} = [ split(/\s+/,$line)];
+	       $liabs{$_} = [ split(/\s+/,$line) ];
 	   }
 	   $marker = new Bio::Pedigree::Marker( -verbose => $self->verbose,
 						-name => $name,
@@ -178,12 +180,12 @@ sub read_pedigree{
 					      -mother_id   => $mother,
 					      -gender      => $gender,
 					      -child_id    => $child,
-					      -displayid   => $displayid,
+					      -display_id  => $displayid,
 					      -patsib_id   => $patsib,
 					      -matsib_id   => $matsib,
 					      -proband     => $proband);
 
-       foreach my $marker ( $pedigree->each_Marker ) {
+       foreach my $marker ( map { $pedigree->get_Marker($_) } @marker_order ) {
 	   my @alleles = splice(@results, 0, $marker->num_result_alleles);
 	   my $result = new Bio::PopGen::Genotype(-marker_name => $marker->name,
 						  -alleles => [ @alleles]);
@@ -277,7 +279,7 @@ sub write_pedigree {
 		$fh->_print(join(' ', map { sprintf("%5s ")} 
 				       $result->alleles));
 	    }	    
-	    $fh->_print(sprintf("ID=%s CTR=%s", $person->displayid,
+	    $fh->_print(sprintf("ID=%s CTR=%s", $person->display_id,
 				      $group->center));
 	    $fh->_print("\n");
 	}

@@ -109,7 +109,8 @@ sub read_pedigree {
     }
     my $pedigree = new Bio::Pedigree::Pedigree;
     my ($line,$nMarkers, $nFams,$date,@com,$comment);    
-
+    my @marker_order;
+    
     # skip blank lines
     my $fh = $self->_pedfh;
     while( defined($line = $fh->_readline) && $line !~ /\S/ ) {}
@@ -126,7 +127,6 @@ sub read_pedigree {
     # save data and comment fields
     ( $date !~ /^\s+$/) && $pedigree->date($date);
     $pedigree->comment($comment);
-
     # let's read in all the markers
   MARKERREAD: foreach ( 1..$nMarkers ) {
       my $marker;
@@ -136,7 +136,7 @@ sub read_pedigree {
       if( $line =~ /^\s*(1)\s+(\d+)\s+(\S+)\s+(.+)?$/ ) {
 	  # if type code is '1' then this must be a disease marker
 	  my ($type,$nall,$name, $desc) = ($1,$2,$3,$4);
-	  # skip blank lines
+	  # skip blank lines	  
 	  while( defined($line = $fh->_readline) ) {
 	      last if ( $line =~ /\S/ );
 	  }
@@ -180,6 +180,7 @@ sub read_pedigree {
 	  if (@pens ) {
 	      $self->warn("Liability classes do not equal number of penetrances\n");
 	  }
+	  push @marker_order, $name;
 	  $marker = new Bio::Pedigree::Marker(-verbose => $self->verbose,
 					      -type    => 'disease',
 					      -name    => $name,
@@ -209,6 +210,7 @@ sub read_pedigree {
 	      }
 	      last if ( scalar(keys %alleles) == $nall );
 	  }
+	  push @marker_order, $name;
 	  $marker  = new Bio::Pedigree::Marker(-verbose => $self->verbose,
 					       -type    =>'variation',
 					       -name    => $name,
@@ -241,14 +243,14 @@ sub read_pedigree {
 
 	  my ($indnum,$father,$mother,
 	      $gender, @results) = split(/\s+/,$line);
-
+	  
 	  my $person = new Bio::Pedigree::Person(-verbose   => $self->verbose,
 						 -person_id => $indnum,
 						 -father_id => $father,
 						 -mother_id => $mother,
 						 -gender    => $gender);
 	  my $result_num = scalar @results;
-	  foreach my $marker ( $pedigree->each_Marker ) {
+	  foreach my $marker ( map { $pedigree->get_Marker($_) } @marker_order ) {
 	      my @mkresult;
 	      my $zero;
 	      while( (scalar @mkresult) < $marker->num_result_alleles) {
@@ -316,7 +318,7 @@ sub write_pedigree {
     if( ! $self->_initialize_fh(@args) ) {
 	$self->_initialize_fh(-pedfile => \*STDOUT );
     }
-
+    
     my ($pedigree) = $self->_rearrange([qw(PEDIGREE)], @args);
     if( !defined $pedigree || !ref($pedigree) || 
 	!$pedigree->isa('Bio::Pedigree::Pedigree') ) {
@@ -375,6 +377,7 @@ sub write_pedigree {
 
     # now lets print the families
     foreach my $group ( @fams ) {
+	$group->calculate_relationships();
 	my @inds = $group->each_Person();
 #	my @dbled = $family->get_DoubledPersonIds(-type => 'id');
 	
@@ -396,10 +399,12 @@ sub write_pedigree {
 		    push @results, sprintf('%-3s', $allele);
 		}
 	    }
+	    my $fath = $person->father;
+	    my $moth = $person->mother;
 	    $fh->_print(sprintf("%4s %4s %4s %2s %s\n", 
-				  &_digitstr($person->person_id),
-				  &_digitstr($person->father_id),
-				  &_digitstr($person->mother_id),
+				  &_digitstr($person->display_id),
+				  &_digitstr($fath ? $fath->display_id : $person->father_id),
+				  &_digitstr($moth ? $moth->display_id : $person->mother_id),
 				  $person->gender,
 				  join(" ", @results) )
 			  );	    

@@ -95,7 +95,9 @@ sub read_pedigree{
     # defines the number of markers
     $line =~ s/^\s+(\S+)/$1/;
     my ($markercount) = split(/\s+/,$line);
-    if( !$markercount ) { $self->throw("Ped format: incorrect dat format -- no marker count at top line ") }
+    if( !$markercount ) { 
+	$self->throw("Ped format: incorrect dat format -- no marker count at top line ");
+    }
     # skip the next line b/c I don't know what to do with it   
     
     $fh->_readline;
