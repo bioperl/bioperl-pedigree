@@ -2,19 +2,35 @@
 
 use Test;
 use strict;
+use vars qw($error);
+my $tmpfile = "draw3";
 
 BEGIN { 
     use vars qw($NUMTESTS);
     $NUMTESTS = 2;
     plan tests => $NUMTESTS;
+    eval { require GD; 
+	   require Bio::Pedigree; 
+	   require Bio::Pedigree::PedIO;
+       };
+    if( $@ ) {
+	print STDERR "Cannot load GD or Tie::IxHash, skipping tests\n";
+	$error = 1;
+   }
 }
 
 END {
-    unlink('draw3.png');
+    for ($Test::ntest..$NUMTESTS) {
+	skip("unable to run all of the Draw tests, check your GD installation",1);
+    }
+    unlink($tmpfile);
 }
-use Bio::Pedigree::Draw;
+if( $error == 1 ) {
+    exit(0);
+}
+
 use Bio::Root::IO;
-use Bio::Pedigree::PedIO;
+
 my $verbose = 0;
 my $io = new Bio::Root::IO;
 
@@ -29,14 +45,17 @@ $pedio = new Bio::Pedigree::PedIO(-format => 'lapis');
 my $pedigree2 = $pedio->read_pedigree(-pedfile => $io->catfile('t','data','test1.lap'));
 
 #my ($fh,$tmpfile) = $io->tempfile();
-my $tmpfile = "draw3.png";
 my $draw = new Bio::Pedigree::Draw(-verbose =>$verbose);
 
 ok($draw);
+
+my $gd = new GD::Image(1,1);
+my $type = $gd->can('png') ? 'png' : 'gif';
+
 $draw->draw(-pedigree   => $pedigree2,
 	    -group      => 4,
 	    -rendertype => 'pedplot',
 	    -file       => ">$tmpfile",
-	    -format     => 'png');
+	    -format     => $type);
 
 ok ( -s $tmpfile);
