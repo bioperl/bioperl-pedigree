@@ -137,14 +137,7 @@ sub add_group_to_draw {
 	$self->warn("No valid group passed in to plot");
 	return;
     }
-    if( $marker && ( ! ref($marker) || 
-		     ! $marker->isa('Bio::Pedigree::Marker::disease') ) ) {
-	$self->warn("Invalid object passed in for marker - $marker, must have a Bio::Pedigree::Marker::disease object to code for affecction status");
-	$marker = undef;
-    } elsif( ! defined $code ) {
-	$code = 'A';
-    }
-    
+    if( defined $marker && ! $code ) { $code = 'A'}
     # make sure that the relationships have been calculated
     $group->calculate_relationships;
 
@@ -160,7 +153,7 @@ sub add_group_to_draw {
 	return 0;
     } 
     if( defined $marker ) { 
-	$self->affected_marker($marker->name,$code);
+	$self->affected_marker($marker,$code);
     }
     
     my ($x,$y) = $self->_draw_couple(@{$founders[0]},$DEFAULTSTARTX,
@@ -378,12 +371,11 @@ sub _draw_children {
     print "nextx $nextx\n";    
     # deal with siblings
     if( $child->patsib ) {
-	my ($startx) = $nextx + $WIDTH;
 	($nextx,$nexty) = $self->_draw_sibling($child->patsib, 
-					       'patsib', $startx, $nexty);    
+					       'patsib', $nextx + $WIDTH, 
+					       $nexty);    
 	
     }
-
     return ($nextx,$nexty);
 }
 
@@ -414,7 +406,8 @@ sub _draw_sibling {
     }
     my ($sib) = $person->$sibtype();
     if( defined $sib ) {	
-	($nextx, $nexty) = $self->_draw_sibling($sib,$sibtype, $nextx, $y);
+	($nextx, $nexty) = $self->_draw_sibling($sib,$sibtype, 
+						$self->max_width, $y);
     }
 
     return ($nextx, $nexty);
@@ -423,11 +416,11 @@ sub _draw_sibling {
 sub _draw_person {
     my ($self,$person,$x,$y) = @_;
     
-    my $command;
+    my $command;    
     my ($marker,$code) = $self->affected_marker();
     my $affstatus = 0;
-    if( !defined $marker || $marker ne '' ) {
-	my ($result) = ($person->get_Result($marker)->alleles);
+    if( defined $marker && $marker ne '' ) {
+	my ($class,$result) = ($person->get_Result($marker)->alleles);	
 	$affstatus = ( defined $result && $result eq $code );
     }
     if( $person->gender eq 'M' ) {
@@ -459,7 +452,7 @@ sub _draw_person {
     $self->add_Command( new Bio::Pedigree::Draw::TextCommand
 			( -startx    => $x + ($WIDTH/4), 
 			  -starty    => $y + $HEIGHT,
-			  -text      => $person->personid,
+			  -text      => $person->displayid,
 			  -fontsize  => $LABELFONTSIZE,
 			  -direction => 'horizontal')
 			);

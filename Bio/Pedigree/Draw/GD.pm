@@ -295,7 +295,7 @@ sub draw_oval {
 			  0, 360, $color);
 
     if(defined $fillcolor && $fillcolor != $white ) {
-	$self->fill($centerx,$centery,$fillcolor);
+	$self->_gdengine->fill($centerx,$centery,$fillcolor);
     }
 }
 

@@ -15,7 +15,7 @@ use Bio::Pedigree::PedIO;
 
 my $io = new Bio::Root::IO;
 
-my $pedio = new Bio::Pedigree::PedIO(-format => 'ped');
+my $pedio = new Bio::Pedigree::PedIO(-format => 'linkage');
 
 my $pedigree = $pedio->read_pedigree(-datfile => $io->catfile('t','data',
 							      'x-linked.pdat'),

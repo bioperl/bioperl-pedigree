@@ -1,4 +1,4 @@
-
+# $Id$
 #
 # BioPerl module for Bio::Pedigree::ResultI
 #
@@ -12,23 +12,31 @@
 
 =head1 NAME
 
-Bio::Pedigree::ResultI - DESCRIPTION of Object
+Bio::Pedigree::ResultI - Interface for Marker Results
 
 =head1 SYNOPSIS
 
-Give standard usage here
+    # get a Bio::Pedigree::ResultI object somehow
+    print "markername is ", $result->name, " alleles are (",
+    join(",", $result->alleles), ")\n";
 
 =head1 DESCRIPTION
 
-Describe the object here
+This interface encapsulates the information a Marker Result will have.
+Disease markers will have single allele results or perhaps 2 alleles
+with one allele being the disease status and the second allele the
+liability class.  
+
+For standard microsattelite, RFLP, SNP markers 2 alleles will
+represent the allele value for each chromosome.
 
 =head1 FEEDBACK
 
 =head2 Mailing Lists
 
-User feedback is an integral part of the evolution of this and other
-Bioperl modules. Send your comments and suggestions preferably to
-the Bioperl mailing list.  Your participation is much appreciated.
+User feedback is  an integral part of the evolution  of this and other
+Bioperl modules. Send your  comments and suggestions preferably to the
+Bioperl mailing list.  Your participation is much appreciated.
 
   bioperl-l@bioperl.org            - General discussion
 http://bioperl.org/MailList.shtml  - About the mailing lists

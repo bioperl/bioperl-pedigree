@@ -285,7 +285,6 @@ sub gender{
 
 sub displayid{
     my ($self,$value) = @_;
-    
     if( defined $value || ! defined $self->{'_displayid'} ) {	
 	$value = $self->personid unless defined $value;
 	$self->{'_displayid'} = $value;

@@ -1,4 +1,4 @@
-
+# $Id$
 #
 # BioPerl module for Bio::Pedigree::PedIO
 #
@@ -12,15 +12,18 @@
 
 =head1 NAME
 
-Bio::Pedigree::PedIO - DESCRIPTION of Object
+Bio::Pedigree::PedIO - PedIO interface 
 
 =head1 SYNOPSIS
 
-Give standard usage here
+    use Bio::Pedigree::PedIO;
+    my $pedio = new Bio::Pedigree::PedIO(-format => 'genethon');
 
 =head1 DESCRIPTION
 
-Describe the object here
+This is the interface description for the PedIO system.  Various
+subclasses implement this module and handle reading and writing
+pedigrees in specific formats.
 
 =head1 FEEDBACK
 

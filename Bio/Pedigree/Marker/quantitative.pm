@@ -12,21 +12,22 @@
 
 =head1 NAME
 
-Bio::Pedigree::Marker::quantitative - module for managing lapis
-Quantitivate marker data
+Bio::Pedigree::Marker::quantitative - module for managing Quantitivate
+marker data
 
 =head1 SYNOPSIS
 
     use Bio::Pedigree::Marker;
-    my $marker = new Bio::Pedigree::Marker::quantitative(-name       => $name,
-							 -type       => $type,
-							 -desc       => $desc,
-							 -comment    => $comment
-						      );
+    my $marker = new Bio::Pedigree::Marker::quantitative
+    (-name       => $name,
+     -type       => $type,
+     -desc       => $desc,
+     -comment    => $comment
+     );
 
 =head1 DESCRIPTION
 
-This module manages Lapis Quantitative Marker information.
+This module manages Quantitative Marker information.
 
 =head1 AUTHOR - Jason Stajich
 

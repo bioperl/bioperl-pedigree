@@ -109,7 +109,7 @@ sub _initialize {
 	$self->throw("Must have defined TYPE to create a marker");
     }
     $display = $name unless defined $display;
-    $self->type($type);
+    $self->type( uc $type);
     $self->name($name);        
     $self->display_name($display );
 

@@ -160,13 +160,12 @@ sub draw {
 	s/\.pm$//;
     }
     my $marker;
-    foreach $marker ( $pedigree->each_Marker ) {
-	last if( $marker->type eq 'DISEASE' );
+    foreach my $m ( $pedigree->each_Marker ) {
+	if( $m->type eq 'DISEASE' ) { $marker = $m; last;}
     }
     my $renderengine = $rendermodule->new;
-
     foreach my $group ( $pedigree->each_Group ) {
-	$renderengine->add_group_to_draw($group, $marker, 'A');
+	$renderengine->add_group_to_draw($group, $marker->name, 1);
         last;
     }
     # reposition the drawing

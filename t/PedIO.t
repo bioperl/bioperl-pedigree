@@ -73,7 +73,7 @@ ok (($person->get_Result('D1S123')->alleles)[1],'148');
 ok (($person->get_Result('D1S987')->alleles)[0],'134');
 ok (($person->get_Result('MKR90')->alleles)[1],'159');
 
-my $pedfmtio = new Bio::Pedigree::PedIO(-format => 'ped');
+my $pedfmtio = new Bio::Pedigree::PedIO(-format => 'linkage');
 
 $pedigree = $pedfmtio->read_pedigree(-pedfile => $io->catfile('t','data',
 							      'example1.pped'),

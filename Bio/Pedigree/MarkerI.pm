@@ -16,19 +16,25 @@ Bio::Pedigree::MarkerI - Base interface for Markers in Pedigrees
 
 =head1 SYNOPSIS
 
-Give standard usage here
+    # get a Bio::Pedigree::MarkerI object somehow
+    print "name is ", $marker->name, "\n";
+    print "display name is ", $marker->display_name, "\n";
+    print "type is ", $marker->type, "\n";   
+    print "number of alleles are ", $marker->num_of_result_alleles, "\n";
+    print "description is ", $marker->description, "\n";
 
 =head1 DESCRIPTION
 
-Describe the object here
+This interface describes the basic Marker object as required for
+describing pedigrees for linkage analysis.
 
 =head1 FEEDBACK
 
 =head2 Mailing Lists
 
-User feedback is an integral part of the evolution of this and other
-Bioperl modules. Send your comments and suggestions preferably to
-the Bioperl mailing list.  Your participation is much appreciated.
+User feedback is  an integral part of the evolution  of this and other
+Bioperl modules. Send your  comments and suggestions preferably to the
+Bioperl mailing list.  Your participation is much appreciated.
 
   bioperl-l@bioperl.org            - General discussion
 http://bioperl.org/MailList.shtml  - About the mailing lists
@@ -141,7 +147,20 @@ sub description{
 
 sub num_of_result_alleles{
     $_[0]->_abstractDeath;
+}
 
+=head2 type_code
+
+ Title   : type_code
+ Usage   : my $code_type = $marker->type_code();
+ Function: Get marker code type
+ Returns : integer
+ Args    : none
+
+=cut
+
+sub type_code {
+    $_[0]->_abstractDeath;
 }
 
 1;
