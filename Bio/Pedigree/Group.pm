@@ -151,6 +151,7 @@ sub new {
                        id.
  Throws  : Exception if a person with the id $person->id  already exists
            unless $overwrite is true
+
 =cut
 
 sub add_Person{
@@ -370,6 +371,7 @@ sub type {
            'failOnError' - to throw and exception when an error is found
            passing anything else (or no argument) will cause method to 
            update errors quietly
+
 =cut
 
 sub calculate_relationships {
@@ -390,6 +392,60 @@ sub calculate_relationships {
 	$warntype);
 }
 
+
+=head2 find_founders
+
+ Title   : find_founders
+ Usage   : my @founders = $group->find_founders();
+ Function: Returns a list of 2-pule arrays for each set of founders
+           Founders which are multi-married can be a problem some
+           implementation may insert an artificial ancestor lineage 
+           to solve this problem
+ Returns : Array of 2-pule arrays for each couple that can be considered
+           a founder (ie a couple which both people have no parents
+		      in the pedigree)
+ Args    : none
+
+=cut
+
+sub find_founders {
+    my ($self) = @_;
+    # even if this is redundant - we want to be sure that everything is 
+    # up to date wrt child pointers
+#    $self->calculate_relationships();
+    
+    # find all the people who have no father or mother in the pedigree
+    my %orphans;  # these will be indexed by their CHILD pointers
+    foreach my $person ( $self->each_Person ){
+	if( $person->fatherid == 0 ) {
+	    if( $person->motherid != 0 ) {
+		$self->throw("Person ". $person->personid. " has is malformed, they have a mother pointer of ". $person->motherid. " while their fatherid is 0");
+	    }
+	    push @{$orphans{$person->childid}}, $person, 
+	}
+    }
+    
+    my @founders;
+    while( my($child,$parents) = each %orphans ) {
+	if( @$parents > 2 ) {
+	    $self->throw("Sanity Check failed - a child -- $child -- has more than 2 parents!\nParent Ids are: ". join(',', map { $_->personid } @$parents ));
+	} elsif( @$parents == 1 ) { next; }
+	$parents = [ sort { $a->gender eq 'M' ? 1 : 0 } @$parents]; 
+	if( $parents->[0]->gender eq $parents->[1]->gender ) {
+	    $self->warn("Parents gender is not opposite!\n".
+			sprintf("Gender was for %s: %s and for %s: %s",
+				$parents->[0]->personid, 
+				$parents->[0]->gender,
+				$parents->[1]->personid, 
+				$parents->[1]->gender));
+	    next;
+	}
+	push @founders, $parents;
+    }
+    return @founders;
+}
+
+
 # helper method - not public
 
 sub _helper_calculate_relationships {
@@ -403,15 +459,17 @@ sub _helper_calculate_relationships {
     if( $person->fatherid ) {
 	if( ! $person->motherid ) { $group->throw("MotherID does not exist for individual $id, which does have a fatherid ".$person->fatherid); }
 	my $father = $group->get_Person($person->fatherid);
-	my $mother = $group->get_Person($person->motherid);
+	my $mother = $group->get_Person($person->motherid);	
 	if( $father->gender ne 'M' ) {
 	    $warntype->("Expected gender to be 'M' for ". $person->fatherid);
 	    $father->gender('M');			
 	}
 	if( $mother->gender ne 'F' ) {
 	    $warntype->("Expected gender to be 'F' for ". $person->motherid);
-	    $mother->gender('F');			
+	    $mother->gender('F');
 	}
+	$person->father($father);
+	$person->mother($mother);
 	$count += $group->_add_child($father, $id);
 	$count += $group->_add_child($mother, $id);	
      }
@@ -426,19 +484,25 @@ sub _helper_calculate_relationships {
 
 sub _add_child {
     my ($group,$parent,$child) = @_;
+    return 0 unless $child;
+    my $childobj = $group->get_Person($child);
+    $group->throw("Could not find person with id $child") unless defined $childobj;
     if( ! $parent->childid ) {
 	$parent->childid($child);
+	$parent->child($childobj);
 	return 1;
     } else {
 #	return 0 if( $parent->childid == $child);
+
 	my $firstchild = $group->get_Person($parent->childid);
+	$parent->child($firstchild);
 	if( ! defined $firstchild ) {
 	    $group->throw("Person ". $parent->personid. 
 			  " has reference to 1st child as ". 
 			  $parent->childid . " which does not exist in this group");
 	}
 	return $group->_add_sib($firstchild, $child, 
-				    $parent->gender eq 'M');
+				$parent->gender eq 'M');
     }
 }
 
@@ -454,11 +518,16 @@ sub _add_sib {
 	    $group->throw("Person ". $sib->personid . 
 			  "has a reference to 1st $sibname as ".
 			  $sib->$sibname() . " which does not exist in this group");
-	}
+	}	
 	$group->_add_sib($firstsib, $id, $paternalsib);	
     }
     else {
 	$sib->$sibname($id);
+
+	my $personref = $group->get_Person($id);
+	my $sibobj = ( $paternalsib ) ? 'patsib' : 'matsib';
+    
+	$sib->$sibobj($personref);
 	return 1;
     }
 }

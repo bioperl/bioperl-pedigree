@@ -252,6 +252,47 @@ sub type {
     $_[0]->_abstractDeath();
 }
 
+=head2 Algorithms
+
+=head2 calculate_relationships
+
+ Title   : calculate_relationships
+ Usage   : $group->calculate_relationships('warn');
+ Function: Calculates child->parent pointers and sibships and
+           fills in information for people where applicable
+ Returns : number of updates made
+ Args    : warnings - if program should warn when updating
+           incorrectly specified relationships
+           valid input is 
+           'warnOnError' - to display warnings but to overwrite
+           'failOnError' - to throw and exception when an error is found
+           passing anything else (or no argument) will cause method to 
+           update errors quietly
+=cut
+
+sub calculate_relationships {
+    _abstractDeath();
+}
+
+=head2 find_founders
+
+ Title   : find_founders
+ Usage   : my @founders = $group->find_founders();
+ Function: Returns a list of 2-pule arrays for each set of founders
+           Founders which are multi-married can be a problem some
+           implementation may insert an artificial ancestor lineage 
+           to solve this problem
+ Returns : Array of 2-pule arrays for each couple that can be considered
+           a founder (ie a couple which both people have no parents
+		      in the pedigree)
+ Args    : none
+
+=cut
+
+sub find_founders {
+    _abstractDeath();
+}
+
 1;
 
 
