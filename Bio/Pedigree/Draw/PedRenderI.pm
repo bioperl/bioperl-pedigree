@@ -1,6 +1,6 @@
-# $Id$
+
 #
-# BioPerl module for Bio::Pedigre::Draw::PedPlot
+# BioPerl module for Bio::Pedigree::Draw::PedRenderI
 #
 # Cared for by Jason Stajich <jason@chg.mc.duke.edu>
 #
@@ -12,23 +12,15 @@
 
 =head1 NAME
 
-Bio::Pedigre::Draw::PedPlot - An object to plot pedigrees
+Bio::Pedigree::Draw::PedRenderI - DESCRIPTION of Object
 
 =head1 SYNOPSIS
-{
-    use Bio::Pedigree::Draw::PedPlot;
-    # get a Bio::Pedigree somehow
-    my $plotter = new Bio::Pedigree::Draw::PedPlot(-drawingengine => $de);
-    $plotter->add_group_to_draw($group,$dxmarker);
-    $plotter->write();
-}
+
+Give standard usage here
 
 =head1 DESCRIPTION
 
-This is an implementation of Bio::Pedigree::Draw::PedRenderI.
-This is based on code by Jason Stajich for pedigree plotting in 
-PedPlot - see ASHG ..... 
- 
+Describe the object here
 
 =head1 FEEDBACK
 
@@ -67,37 +59,15 @@ Internal methods are usually preceded with a _
 # Let the code begin...
 
 
-package Bio::Pedigre::Draw::PedPlot;
-use vars qw(@ISA);
+package Bio::Pedigree::Draw::PedRenderI;
 use strict;
 
-use Bio::Root::RootI;
-use Bio::Pedigree::Draw::PedRenderI;
-
-@ISA = qw( Bio::Pedigree::Draw::PedRenderI Bio::Root::RootI );
-
-=head2 new
-
- Title   : new
- Usage   : my $plotter = new Bio::Pedigree::Draw::PedPlot(-drawingengine=>$de);
- Function: Initializes a Pedigree::Draw::PedPlot object for plotting pedigrees
- Returns : Bio::Pedigree::Draw::PedPlot object
- Args    : -drawingengine => Bio::Pedigree::Draw::GraphicsI object
-
-=cut
-
-sub new {
-    my($class,@args) = @_;    
-    my $self = $class->SUPER::new(@args);
-    $self->{'_coveredareas'} = [];
-    $self->{'_commands'}     = [];
-    my ($engine) = $self->_rearrange([qw(DRAWINGENGINE)], @args);
-    if( ! $engine && 
-	! $engine->isa('Bio::Pedigree::Draw::GraphicsI') ) {
-	$self->throw("Must specify a valid Draw::GraphicsI object to Draw::PedPlot");
-    } 
-    $engine && $self->drawengine($engine);
-    return $self;
+sub _abstractDeath {
+  my $self = shift;
+  my $package = ref $self;
+  my $caller = (caller)[1];
+  
+  confess "Abstract method '$caller' defined in interface Bio::Pedigree::Draw::GraphicsI not implemented by pacakge $package. Not your fault - author of $package should be blamed!";
 }
 
 =head2 add_group_to_draw
@@ -116,18 +86,7 @@ sub new {
 =cut
 
 sub add_group_to_draw {
-    my ($self,$group,$marker) = @_;
-    if( ! defined $group || ! ref($group) || 
-	! $group->isa('Bio::Pedigree::GroupI') ) {
-	$self->warn("No valid group passed in to plot");
-	return;
-    }
-    if( $marker && ( ! ref($marker) || 
-		     ! $marker->isa('Bio::Pedigree::MarkerI') ) ) {
-	$self->warn("Invalid object passed in for marker - $marker, ignoring");
-	$marker = undef;
-    }
-    
+    _abstractDeath();
 }
 
 =head2 drawengine
@@ -141,14 +100,7 @@ sub add_group_to_draw {
 =cut
 
 sub drawengine {
-    my ($self,$obj) = @_;
-    if( defined $obj ) {
-	if( !ref($obj) || ! $obj->isa('Bio::Pedigree::Draw::GraphicsI') ){
-	    $self->throw("Did not specify a valid GraphicsI object to drawengine");
-	}
-	$self->{'_engine'} = $obj;
-    }
-    return $self->{'_engine'};
+    _abstractDeath();
 }
 
 =head2 write
@@ -163,11 +115,7 @@ sub drawengine {
 =cut
 
 sub write {
-    my ($self, $drawengine) = @_;
-    if( ! defined $drawengine ) { 
-	$drawengine = $self->drawengine;
-    }
-    
+    _abstractDeath();
 }
 
 1;
