@@ -19,7 +19,7 @@ CHG::Lapis::Marker::disease - module for managing lapis DxMarker data
     use Bio::Pedigree::Marker;
     my $marker = new Bio::Pedigree::Marker::disease(-name       => $name,
 						    -type       => $type,
-						    -desc       => $desc,
+						    -description=> $desc,
 						    -liab_classes=>\%classes,
 						    -frequencies=>\@freqs);
 

@@ -99,7 +99,7 @@ sub _initialize {
 
     $self->{'_alleles'} = {};
 
-    my ($alleles,$chrom, 
+    my ($alleles,$chrom,
 	$fwd,$rev) = $self->_rearrange([qw(ALLELES
 					   CHROM FWDFLANK
 					   REVFLANK)], @args);
@@ -112,8 +112,7 @@ sub _initialize {
     # optional fields
     $fwd     && $self->upstream_flanking_seq($fwd);
     $rev     && $self->dnstream_flanking_seq($rev);
-    $chrom   && $self->chromosome($chrom);
-
+    defined $chrom   && $self->chromosome($chrom);
     return;
 }
 
@@ -260,10 +259,8 @@ sub dnstream_flanking_seq{
 =cut
 
 sub chromosome {
-    my ($self, $value) = @_;
-    if( defined $value ) {
-	$self->{'_chrom'} = $value;
-    }
+    my $self = shift;
+    $self->{'_chrom'} = shift if @_;
     return $self->{'_chrom'};
 }
 

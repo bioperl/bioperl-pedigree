@@ -72,6 +72,7 @@ BEGIN {
  Returns : CHG::Lapis::Marker
  Args    : -name          => [string] marker name
            -description   => [string] marker description
+           -display_name  => [string] a display name for the marker (optional)
            -type          => [string] marker type
            -unique_id     => (optional) [string/int] unique id
            -allele_freq   => (optional) [hash ref] allele frequencies 
@@ -99,7 +100,14 @@ sub new {
     return $self;
 }
 
-sub _initialize {}
+sub _initialize {
+    my ($self,@args) = @_;    
+    my ($display,$dname) = $self->_rearrange([qw(DISPLAY 
+						 DISPLAY_NAME)], @args);
+    $display = $dname if( defined $dname );
+    defined $display && $self->display_name($display);
+    return;
+}
 
 =head2 name
 
@@ -169,12 +177,11 @@ sub description {
 
 =cut
 
-sub display_name{
-   my ($obj,$value) = @_;
-   if( defined $value) {
-      $obj->{'_display_name'} = $value;
-    }
-    return $obj->{'_display_name'};
+sub display_name {
+    my $self = shift;
+    $self->{'_display_name'} = shift if @_;
+    return $self->{'_display_name'};
+
 }
 
 =head2 type_code
