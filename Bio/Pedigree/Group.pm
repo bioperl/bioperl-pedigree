@@ -118,16 +118,21 @@ sub new {
 
   my $self = $class->SUPER::new(@args);
   
-  $self->{'_people'} = {};
-  if( $LOADED_IXHASH ) {
-      tie %{$self->{'_people'}}, "Tie::IxHash";
-  }
-  my ($groupid, $center, $type) = $self->_rearrange([ qw(GROUP_ID 
-							 CENTER 
+  my ($groupid, $center, $people,
+      $type) = $self->_rearrange([ qw(GROUP_ID 
+							 CENTER PEOPLE
 							 TYPE)] , @args);
 
   if( !defined $groupid || ! defined $center ) {
       $self->throw("Must defined groupid and center to initialize a $class object");
+  }
+
+  if( defined $people ) { 
+      if( ref($people) !~ /ARRAY/i ) {
+	  $self->warn("Need to provide a value array ref for the -people initialization flag");
+      } else { 
+	  $self->add_Individual(@$people);
+      }
   }
   $self->group_id($groupid);
   $self->center ($center);
@@ -145,9 +150,8 @@ sub new {
 
 =cut
 
-sub num_of_people{
-    my ($self) = @_;
-    return scalar values %{ $self->{'_people'} };
+sub num_of_people {
+    shift->get_number_individuals;
 }
 
 =head2 add_Person
@@ -185,7 +189,7 @@ sub add_Person{
 =cut
 
 sub remove_Person{
-    return shift->remove_Individual(@_);
+    return shift->remove_Individuals(@_);
 }
 
 
@@ -254,7 +258,7 @@ sub remove_Marker{
     }
     my $foundone = 0;
     foreach my $person ( $self->each_Person ) {
-	if( $person->remove_Result($name) ) { $foundone = 1; }
+	if( $person->remove_Genotype($name) ) { $foundone = 1; }
     }
     return $foundone;
 }
