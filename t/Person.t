@@ -13,9 +13,7 @@ BEGIN {
     }
     use Test;
     plan tests => $NUMTESTS;
-    eval { require Tie::IxHash;
-	   require Bio::Pedigree::Person;
-	   require Bio::Pedigree::Result;
+    eval { require Bio::Pedigree::Person;
        };
     if( $@ ) {
 	print STDERR "skipping tests because Tie::IxHash is not installed\n";
@@ -31,68 +29,71 @@ END {
 
 if( $error == 1 ) { exit(0); }
 
+use Bio::PopGen::Genotype;
 
 ok(1);
 
-my @r = ( new Bio::Pedigree::Result(-name    => 'D1S234',
-					  -alleles => [100,102] ),
-		new Bio::Pedigree::Result(-name    => 'CFDX',
-					  -alleles => ['A'] ),		
-		);
+my @r = ( new Bio::PopGen::Genotype(-marker_name    => 'D1S234',
+				    -alleles => [100,102] ),
+	  new Bio::PopGen::Genotype(-marker_name    => 'CFDX',
+				    -alleles => ['A'] ),		
+	  );
 
-my $person = new Bio::Pedigree::Person(-personid => 1,
-				       -father => 0,
-				       -mother => 0,
-				       -gender   => 'M',
-				       -results  => [@r]);
+my $person = new Bio::Pedigree::Person(-person_id   => 1,
+				       -father_id  => 0,
+				       -mother_id  => 0,
+				       -gender     => 'M',
+				       -genotypes  => [@r]);
 ok ($person);
 ok ($person->isa('Bio::Pedigree::PersonI'));
 
 # test initialization from new
-ok ($person->personid, 1);
-ok ($person->fatherid, 0);
-ok ($person->motherid, 0);
+ok ($person->person_id, 1);
+ok ($person->father_id, 0);
+ok ($person->mother_id, 0);
 ok ($person->gender, 'M');
-my @results = $person->each_Result;
+# order will be CFDX then D1S234
+my @results = sort { $a->marker_name cmp $b->marker_name } 
+              $person->get_Genotypes;
 ok (@results, 2);
 
 my $result = shift @results;
-ok ($result->alleles, 2);
-ok ($result->name, 'D1S234');
-ok ( ($result->alleles)[0], 102);
-ok ( ($result->alleles)[1], 100);
+ok (scalar ($result->get_Alleles), 1);
+ok ($result->marker_name, 'CFDX');
+ok (($result->get_Alleles)[0], 'A');
 
 $result = shift @results;
-ok (scalar ($result->alleles), 1);
-ok ($result->name, 'CFDX');
-ok (($result->alleles)[0], 'A');
+ok ($result->get_Alleles, 2);
+ok ($result->marker_name, 'D1S234');
+ok ( ($result->get_Alleles)[1], 102);
+ok ( ($result->get_Alleles)[0], 100);
+
 
 # test that gender translate numeric to char code
 $person->gender('2');
 ok ($person->gender, 'F');
 
-$result = new Bio::Pedigree::Result(-name => 'D2S111',
+$result = new Bio::PopGen::Genotype(-marker_name => 'D2S111',
 				    -alleles => [ 170,100 ] );
-$person->add_Result($result);
+$person->add_Genotype($result);
 
-@results = $person->each_Result;
+@results = sort { $a->marker_name cmp $b->marker_name } $person->get_Genotypes;
 ok (@results, 3);
-
 # results are always returned 
-my @expected = qw(170 100);
-foreach my $allele ( $results[2]->alleles ) {
+my @expected = qw(100 170);
+foreach my $allele ( sort { $a <=> $b } $results[2]->get_Alleles ) {
     ok ($allele, shift @expected);
 }
-
-$result->alleles(110,165);
+$result->reset_Alleles;
+$result->add_Allele(110,165);
 
 # test overwriting
-$person->add_Result($result,1);
-@results = $person->each_Result;
+$person->add_Genotype($result);
+@results = sort { $a->marker_name cmp $b->marker_name} $person->get_Genotypes;
 ok (@results, 3);
 
-@expected = qw(165 110);
-foreach my $allele ( $results[2]->alleles ) {
+@expected = qw(110 165);
+foreach my $allele ( sort { $a <=> $b } $results[2]->get_Alleles ) {
     ok ($allele, shift @expected);
 }
 
