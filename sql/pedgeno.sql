@@ -20,8 +20,8 @@ CREATE TABLE person (
    KEY i_id ( display_id )
 );
 
-CREATE TABLE family (
-  family_id  integer(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE group (
+  group_id  integer(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   center    char(12)	NOT NULL,
   number    integer(8)  NOT NULL,
   type	    char(8)	NULL DEFAULT 'FAMILY',
@@ -29,10 +29,10 @@ CREATE TABLE family (
   UNIQUE KEY i_ctr_num ( center, number ) 
 );
 
-CREATE TABLE family_person (
-  family_id    integer(11) NOT NULL REFERENCES family ( family_id ),
+CREATE TABLE group_person_rel (
+  group_id    integer(11) NOT NULL REFERENCES group ( group_id ),
   person_id    integer(11) NOT NULL REFERENCES person ( person_id ),
-  PRIMARY KEY pk_fam_person ( family_id, person_id)
+  PRIMARY KEY pk_gp_person ( group_id, person_id)
 );
 
 -- take this from map tables for pedmaps
@@ -63,6 +63,9 @@ create table variation_marker (
   UNIQUE KEY i_primers ( upstreamflank, dnstreamflank )
 );
 
+-- for creating a collection of people who may not be related
+-- such as a white caucasian control group, etc
+
 CREATE TABLE population (
    population_id    integer(9) NOT NULL AUTO_INCREMENT PRIMARY KEY,
    name		    varchar(32)	NOT NULL,
@@ -70,7 +73,7 @@ CREATE TABLE population (
    UNIQUE KEY (name)
 );
 
-CREATE TABLE population_assignment (
+CREATE TABLE population_person_rel (
    population_id    integer(9)  NOT NULL REFERENCES population (population_id),
    person_id	    integer(11)	NOT NULL REFERENCES person (person_id),
    PRIMARY KEY pk_pop_person ( population_id, person_id)
@@ -85,6 +88,8 @@ CREATE TABLE allele (
 );
 
 
+-- calculated frequency of an allele in a given population
+
 CREATE TABLE allele_frequency (
   population_id integer(9) NOT NULL REFERENCES population (population_id),
   allele_id	integer(11) NOT NULL REFERENCES allele ( allele_id ),
@@ -93,6 +98,28 @@ CREATE TABLE allele_frequency (
   PRIMARY KEY pk_allele_freq (population_id, allele_id)
 );
 
+CREATE TABLE pedigree_set (
+  pedigree_id  integer(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name         varchar(128) NOT NULL,
+  date_updated date NULL,
+  UNIQUE KEY i_name (name)
+);
+
+-- a group can be in more than one pedigree file
+
+CREATE TABLE pedigree_groups_rel (
+  pedigree_id integer(11) NOT NULL REFERENCES pedigree_set (pedigree_id),
+  group_id integer(11) NOT NULL REFERENCES group (group_id),
+  PRIMARY KEY pk_ped_grp (pedigree_id, group_id)
+);
+
+-- The relavent markers for this pedigree_set
+
+CREATE TABLE pedigree_groups_rel (
+  pedigree_id integer(11) NOT NULL REFERENCES pedigree_set (pedigree_id),
+  marker_id integer(11) NOT NULL REFERENCES marker (marker_id),
+  PRIMARY KEY pk_ped_mkr (pedigree_id, marker_id)
+);
 
 INSERT INTO markertype ( type, name, description ) 
        VALUES ( 1, 'DX', 'Disease Marker');
