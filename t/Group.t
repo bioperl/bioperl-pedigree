@@ -77,7 +77,7 @@ ok ($person->personid, 2);
 ok (($person->get_Result('D1S234')->alleles)[0], 105);
 
 $group->remove_Marker('D1S234');
-ok( $group->get_Person(2)->get_Result('D1S234'), undef);
+ok( ! $group->get_Person(2)->get_Result('D1S234'));
 
 ok ($group->remove_Person(3));
 ok ($group->num_of_people, 2);

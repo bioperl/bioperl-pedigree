@@ -229,12 +229,12 @@ sub add_marker{
    if( !ref($marker) || ! $marker->isa('Bio::Pedigree::MarkerI') ) {
        $self->warn("Trying to add a marker with data $marker which is not a Bio::Pedigree::MarkerI object");
    }
-   if( $self->{'_markers'}->{$marker->name} && ! $overwrite) {
-       $self->warn("Marker ", $marker->name, " already exists");
+   if( $self->{'_markers'}->{uc $marker->name} && ! $overwrite) {
+       $self->warn("Marker ", uc $marker->name, " already exists");
    } else { 
-       $self->{'_markers'}->{$marker->name} = $marker;
+       $self->{'_markers'}->{uc $marker->name} = $marker;
    }
-   return scalar keys %{$self->{'_groups'}};   
+   return scalar keys %{$self->{'_markers'}};   
 }
 
 =head2 remove_marker
@@ -276,6 +276,64 @@ sub each_Marker{
        keys %{$self->{'_markers'}} : 
        values %{$self->{'_markers'}};
 }
+
+=head2 get_Marker
+
+ Title   : get_Marker
+ Usage   : my $marker = $pedigree->get_Marker($name);
+ Function:
+ Example :
+ Returns : 
+ Args    :
+
+
+=cut
+
+sub get_Marker {
+   my ($self,$name) = @_;
+   return $self->{'_markers'}->{uc $name};
+}
+
+=head2 Additional Data fields
+
+=head2 date
+
+ Title   : date
+ Usage   : $obj->date($newval)
+ Function: stores date created information
+ Returns : value of date
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub date{
+   my ($obj,$value) = @_;
+   if( defined $value) {
+      $obj->{'date'} = $value;
+    }
+    return $obj->{'date'};
+
+}
+
+=head2 comment
+
+ Title   : comment
+ Usage   : $obj->comment($newval)
+ Function: stores pedigree comment information
+ Returns : value of comment
+ Args    : newvalue (optional)
+
+=cut
+
+sub comment{
+   my ($obj,$value) = @_;
+   if( defined $value) {
+      $obj->{'comment'} = $value;
+    }
+    return $obj->{'comment'};
+}
+
 
 # change the group order
 

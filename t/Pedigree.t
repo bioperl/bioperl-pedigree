@@ -4,7 +4,7 @@ use Test;
 
 BEGIN { 
     use vars qw($NUMTESTS);
-    $NUMTESTS = 22;
+    $NUMTESTS = 3;
     plan tests => $NUMTESTS;
 }
 use Bio::Pedigree;

@@ -12,7 +12,7 @@
 
 =head1 NAME
 
-Bio::Pedigree::MarkerI - DESCRIPTION of Object
+Bio::Pedigree::MarkerI - Base interface for Markers in Pedigrees
 
 =head1 SYNOPSIS
 
@@ -127,34 +127,6 @@ sub description{
 }
 
 
-=head2 num_of_alleles
-
- Title   : num_of_alleles
- Usage   : my $count = $marker->num_of_alleles
- Function: returns the number of alleles known for this Marker
- Returns : integer
- Args    : none
-
-
-=cut
-
-sub num_of_alleles{
-    $_[0]->_abstractDeath;
-}
-
-=head2 known_alleles
-
- Title   : known_alleles
- Usage   : @alleles = $marker->known_alleles
- Function: returns a list of the known alleles for this marker
- Returns : @array of known alleles
- Args    : none
-
-=cut 
-
-sub known_alleles {
-    $_[0]->_abstractDeath;
-}
 
 =head2 num_of_result_alleles
 
@@ -170,49 +142,6 @@ sub known_alleles {
 sub num_of_result_alleles{
     $_[0]->_abstractDeath;
 
-}
-
-=head2 add_allele
-
- Title   : add_allele
- Usage   : $marker->add_allele($name, $freq);
- Function: Adds and allele and frequency for a Marker
- Returns : none
- Args    : name  => Allele name 
-           freq  => (optional) allele frequency     
-=cut
-
-sub add_allele{
-    $_[0]->_abstractDeath;
-}
-
-=head2 remove_allele
-
- Title   : remove_allele
- Usage   : $marker->remove_allele($name);
- Function: Remove an allele from a Marker
- Returns : none
- Args    : name -> allele name
-
-=cut
-
-sub remove_allele {
-    $_[0]->_abstractDeath;
-}
-
-=head2 get_allele_frequency
-
- Title   : get_allele_frequency
- Usage   : my $freq = $marker->get_allele_frequency('171');
- Function: Returns the allele frequency for a specific allele, 
-           undef if allele is not known
- Returns : frequency of an allele
- Args    : allele name
-
-=cut
-
-sub get_allele_frequency{
-    $_[0]->_abstractDeath;
 }
 
 1;
