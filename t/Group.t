@@ -87,3 +87,4 @@ ok( ! $group->get_Person(2)->get_Result('D1S234'));
 ok ($group->remove_Person(3));
 ok ($group->num_of_people, 2);
 
+
