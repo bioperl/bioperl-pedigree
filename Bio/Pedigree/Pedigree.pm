@@ -123,7 +123,7 @@ sub new {
   tie %{$self->{'_groups'}}, "Tie::IxHash";
   tie %{$self->{'_markers'}}, "Tie::IxHash";
 
-  my ($groups, $markers, $date,$comment) = $self->_rearrange([qw(GROUPS 
+  my ($groups, $markers, $name, $date, $comment) = $self->_rearrange([qw(GROUPS 
 								 MARKERS 
 								 NAME
 								 DATE 
