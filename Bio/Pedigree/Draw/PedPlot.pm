@@ -458,7 +458,7 @@ sub _draw_person {
     my ($marker,$code) = $self->affected_marker();
     my $affstatus = 0;
     if( defined $marker && $marker ne '' ) {
-	my ($class,$result) = ($person->get_Result($marker)->alleles);	
+	my ($class,$result) = ($person->get_Genotypes($marker)->get_Alleles);
 	$affstatus = ( defined $result && $result eq $code );
     }
     $self->debug("Drawing ".$person->person_id."\n");
@@ -491,7 +491,7 @@ sub _draw_person {
     $self->add_Command( new Bio::Pedigree::Draw::TextCommand
 			( -startx    => $x,
 			  -starty    => $y + $HEIGHT,
-			  -text      => $person->displayid,
+			  -text      => $person->display_id,
 			  -fontsize  => $LABELFONTSIZE,
 			  -direction => 'horizontal')
 			);
