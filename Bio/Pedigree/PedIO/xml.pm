@@ -77,7 +77,6 @@ use Bio::Root::RootI;
 use Bio::Pedigree::PedIO;
 use XML::Writer;
 use XML::Twig;
-use IO;
 
 @ISA = qw(Bio::Pedigree::PedIO );
 
