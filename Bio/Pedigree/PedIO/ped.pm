@@ -121,7 +121,7 @@ sub read_pedigree{
 	$line =~ s/\#//g;
 	#name may be undefined.  assign it the marker id number if
 	#we don't have it.
-	my($type,$alleles, $name) = split(/\s+/,$line);
+	my($type,$num_alleles, $name) = split(/\s+/,$line);
 	$name ||= $_;
 	#       $name =~ s/\#//;
 	my $marker;
@@ -150,8 +150,8 @@ sub read_pedigree{
 	    $line = $fh->_readline;
 	    $line =~ s/^\s+(\S+)/$1/;
 	    my( $count,%alleles) = ( 1 );
-
 	    foreach my $freq ( split(/\s+/,$line) ) {
+		last if $count >= $num_alleles;
 		$alleles{$count++} = $freq;
 	    }
 
