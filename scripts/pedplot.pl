@@ -11,8 +11,8 @@ qq{pedplot.pl -p pedfile [-d datafile] -f format -o outfile
 default format is 'linkage', available formats are 'lapis' and 'linkage'
 datafile is only needed when using linkage format
 };
-
-my ($dat,$ped,$format,$dformat,$verbose,$out) = ('','','linkage','png');
+my ($ped,$dat);
+my ($format,$dformat,$verbose,$out) = ('linkage','png');
 GetOptions(
 	   'd|dat:s'    => \$dat,
 	   'p|ped:s'    => \$ped,
@@ -23,9 +23,9 @@ GetOptions(
 	   );
 
 if( ! defined $ped ) { 
-    carp("Must define a valid pedfile\n$USAGE");
+    croak("Must define a valid pedfile\n$USAGE");
 } elsif( $format =~ /linkage/i && ! defined $dat ) {
-    carp("Must define a valid datfile for linkage format\n$USAGE");
+    croak("Must define a valid datfile for linkage format\n$USAGE");
 }
 
 my $pedio = new Bio::Pedigree::PedIO(-format => $format,
