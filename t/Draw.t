@@ -15,7 +15,7 @@ BEGIN {
     $NUMTESTS = 2;
     plan tests => $NUMTESTS;
     eval { require GD; 
-	   require Bio::Pedigree; 
+	   require Bio::Pedigree::Pedigree; 
 	   require Bio::Pedigree::PedIO;
 	   require Bio::Pedigree::Draw;
        };

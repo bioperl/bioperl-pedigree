@@ -5,7 +5,7 @@ use strict;
 
 BEGIN { 
     use vars qw($NUMTESTS $error) ;
-    $NUMTESTS = 27;
+    $NUMTESTS = 22;
     $error = 0;
     eval { require Test; };
     if( $@ ) {

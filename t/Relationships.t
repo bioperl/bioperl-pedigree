@@ -14,7 +14,6 @@ BEGIN {
     use Test;
     plan tests => $NUMTESTS;
     eval { require Tie::IxHash;
-	   require Bio::Pedigree;
 	   require Bio::Pedigree::Group;
 	   require Bio::Pedigree::PedIO;
        };

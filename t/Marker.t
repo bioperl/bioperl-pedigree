@@ -13,9 +13,9 @@ BEGIN {
     use Test;
     plan tests => $NUMTESTS;
     eval { require Tie::IxHash;
-	   require Bio::Pedigree;
 	   require Bio::Pedigree::Group;
 	   require Bio::Pedigree::Result;
+	   require Bio::Pedigree::Marker;
        };
     if( $@ ) {
 	print STDERR "skipping tests because Tie::IxHash is not installed\n";
