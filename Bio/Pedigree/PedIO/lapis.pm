@@ -71,7 +71,7 @@ use Bio::Pedigree::Pedigree;
 use Bio::Pedigree::Group;
 use Bio::Pedigree::Person;
 use Bio::Pedigree::PedIO;
-use Bio::Popgen::Genotype;
+use Bio::PopGen::Genotype;
 
 @ISA = qw(Bio::Pedigree::PedIO );
 
