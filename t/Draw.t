@@ -1,17 +1,23 @@
 # -*-Perl-*-
 
-use Test;
 use strict;
-use vars qw($error);
 my $tmpfile = "draw3";
-
 BEGIN { 
-    use vars qw($NUMTESTS);
+    use vars qw($error $NUMTESTS);
+    $error = 0;
+
+    eval { require Test; };
+    if( $@ ) {
+	use lib 't';
+    }
+    use Test;
+
     $NUMTESTS = 2;
     plan tests => $NUMTESTS;
     eval { require GD; 
 	   require Bio::Pedigree; 
 	   require Bio::Pedigree::PedIO;
+	   require Bio::Pedigree::Draw;
        };
     if( $@ ) {
 	print STDERR "Cannot load GD or Tie::IxHash, skipping tests\n";

@@ -1,15 +1,45 @@
 # -*-Perl-*-
 
 use strict;
-use Test;
+use vars qw($error $NUMTESTS $SKIPXML) ;
+
 
 BEGIN {
-	use vars qw($NUMTESTS);
-	$NUMTESTS = 47;
-	plan tests => $NUMTESTS;
+    $error = 0; 
+    $SKIPXML = 0;
+
+    eval { require Test; };
+    if( $@ ) {
+	use lib 't';
+    }
+    use Test;
+    
+    $NUMTESTS = 48;
+    plan tests => $NUMTESTS;
+
+    eval { require Tie::IxHash;
+	   require Bio::Pedigree::PedIO; };
+    if( $@ ) {
+	print STDERR "No Tie::IxHash installed skipping tests\n";
+	$error = 1;
+    }
+
+    eval { require XML::Writer };
+    if( $@ ) {
+	$SKIPXML = 1;
+    }
 }
 
-use Bio::Pedigree::PedIO;
+END {
+    for ($Test::ntest..$NUMTESTS) {
+	skip("unable to run all of the Draw tests, check your GD installation",1);
+    }
+}
+
+if( $error == 1 ) {
+    exit(0);
+}
+
 use Bio::Root::IO;
 
 my $io = new Bio::Root::IO;
@@ -98,6 +128,11 @@ ok ( $person->father->personid, 5);
 $lapisio->write_pedigree(-pedigree => $pedigree,
 			 -pedfile  => \*STDOUT);
 
-my $xmlio = new Bio::Pedigree::PedIO( -format => 'xml' );
-$xmlio->write_pedigree( -pedigree => $pedigree,
-			-pedfile  => \*STDOUT);
+unless( $SKIPXML ) { 
+    my $xmlio = new Bio::Pedigree::PedIO( -format => 'xml' );
+    $xmlio->write_pedigree( -pedigree => $pedigree,
+			    -pedfile  => \*STDOUT);
+    ok(1);
+} else { 
+    skip("Skipping XML output since XML::Writer is not installed\n",1);
+}

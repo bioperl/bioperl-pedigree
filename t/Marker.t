@@ -1,15 +1,36 @@
 # -*-Perl-*-
 
-use Test;
 use strict;
 
 BEGIN {
-    use vars qw($NUMTESTS);
+    use vars qw($NUMTESTS $error) ;
     $NUMTESTS = 27;
+    $error = 0;
+    eval { require Test; };
+    if( $@ ) {
+	use lib 't';
+    }
+    use Test;
     plan tests => $NUMTESTS;
+    eval { require Tie::IxHash;
+	   require Bio::Pedigree;
+	   require Bio::Pedigree::Group;
+	   require Bio::Pedigree::Result;
+       };
+    if( $@ ) {
+	print STDERR "skipping tests because Tie::IxHash is not installed\n";
+	$error = 1;
+    }
 }
 
-use Bio::Pedigree::Marker;
+END { 
+    for ( $Test::ntest..$NUMTESTS ) {
+	skip("Skipping rest of Group tests",1);
+    }
+}
+
+if( $error == 1 ) { exit(0); }
+
 use Bio::PrimarySeq;
 
 my $variation = new Bio::Pedigree::Marker

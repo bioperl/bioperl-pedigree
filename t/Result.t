@@ -1,11 +1,18 @@
 # -*-Perl-*-
 
-use Test;
 use strict;
 
 BEGIN { 
     use vars qw($NUMTESTS);
     $NUMTESTS = 10;
+
+    eval { require Test; };
+    if( $@ ) {
+	use lib 't';
+    }
+    use Test;
+
+
     plan tests => $NUMTESTS;
 }
 
