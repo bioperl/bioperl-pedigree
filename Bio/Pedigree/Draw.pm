@@ -63,7 +63,7 @@ package Bio::Pedigree::Draw;
 use strict;
 use vars qw(@ISA %FORMATS %RENDERTYPES $DEFAULTRENDERTYPE);
 
-%FORMATS = ( 'png|jpg|jpeg|gd|gd2' => 'Bio/Pedigree/Draw/GD.pm',
+%FORMATS = ( 'png|jpg|jpeg|gd|gd2|gif' => 'Bio/Pedigree/Draw/GD.pm',
 	     'ps|postscript' => 'Bio/Pedigree/Draw/Postscript.pm'
 	     );
 
@@ -176,7 +176,7 @@ sub draw {
         $renderengine->add_group_to_draw($group, $marker->name, 1);
     } else {      
 	foreach my $group ( @groups ) {
-	    $renderengine->add_group_to_draw($group, $marker->name, 1);
+	    $renderengine->add_group_to_draw($group, defined $marker ? $marker->name : '', 1);
 	    last;
 	}
     }
@@ -185,7 +185,8 @@ sub draw {
     my $drawingengine = $formatmodule->new(-width => $renderengine->max_width,
 					   -height => $renderengine->max_height ,
 					   -fh => $self->_fh,
-					   -format => $format);
+					   -format => $format,
+                                           -type   =>  $format);
 
     $renderengine->write($drawingengine);
 }
