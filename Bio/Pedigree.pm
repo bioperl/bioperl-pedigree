@@ -69,6 +69,7 @@ use Bio::Root::RootI;
 use Tie::IxHash;
 use Bio::Pedigree::Group;
 use Bio::Pedigree::Marker;
+use POSIX;
 
 @ISA = qw(Bio::Root::RootI );
 
@@ -97,7 +98,10 @@ sub new {
   tie %{$self->{'_groups'}}, "Tie::IxHash";
   tie %{$self->{'_markers'}}, "Tie::IxHash";
 
-  my ($groups, $markers) = $self->_rearrange([qw(GROUPS MARKERS)], @args);
+  my ($groups, $markers, $date,$comment) = $self->_rearrange([qw(GROUPS 
+								 MARKERS 
+								 DATE 
+								 COMMENT)], @args);
   if( defined $groups ) {
       if( ref($groups) !~ /array/i ) {
 	  $self->throw("Trying to initialize Bio::Pedigree object with groups ($groups) which is not an array reference");
@@ -116,6 +120,8 @@ sub new {
 	  }
       }
   }
+  $date && $self->date($date);
+  $comment && $self->comment($comment);
   return $self;
 }
 
@@ -294,6 +300,23 @@ sub get_Marker {
    return $self->{'_markers'}->{uc $name};
 }
 
+
+=head2 num_of_markers
+
+ Title   : num_of_markers
+ Usage   : my $count = $pedigree->num_of_markers;
+ Function: Returns the number of markers in this Pedigree object
+ Returns : integer
+ Args    : none
+
+
+=cut
+
+sub num_of_markers{
+   my ($self) = @_;
+   return scalar keys %{$self->{'_markers'}};
+}
+
 =head2 Additional Data fields
 
 =head2 date
@@ -309,11 +332,12 @@ sub get_Marker {
 
 sub date{
    my ($obj,$value) = @_;
-   if( defined $value) {
-      $obj->{'date'} = $value;
-    }
-    return $obj->{'date'};
-
+   if( defined $value || ! defined $obj->{'_date'}) {
+       $value = &POSIX::strftime("%Y/%M/%d",localtime(time)) 
+	   unless defined $value;
+       $obj->{'_date'} = $value;
+   }
+   return $obj->{'_date'};
 }
 
 =head2 comment
@@ -328,10 +352,10 @@ sub date{
 
 sub comment{
    my ($obj,$value) = @_;
-   if( defined $value) {
-      $obj->{'comment'} = $value;
+   if( defined $value ) {
+      $obj->{'_comment'} = $value;
     }
-    return $obj->{'comment'};
+    return $obj->{'_comment'} || '';
 }
 
 

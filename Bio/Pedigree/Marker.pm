@@ -44,12 +44,12 @@ package Bio::Pedigree::Marker;
 use vars qw(@ISA %MARKERTYPES);
 use strict;
 use Bio::Root::RootI;
-
+use Bio::Pedigree::MarkerI;
 # Bio::Root::RootI is part of the bioperl project
 # this module provides basic error handling and 
 # argument handling 
 
-@ISA = qw(Bio::Root::RootI);
+@ISA = qw(Bio::Pedigree::MarkerI Bio::Root::RootI);
 
 BEGIN { 
     %MARKERTYPES = ( 'DISEASE'         => 1,
@@ -102,11 +102,17 @@ sub _initialize {
 						 TYPE DESC 
 						 DISPLAY)],
 					     @args);
+    if( ! defined $name ){
+	$self->throw("Must have defined NAME to create a marker"); 
+    } elsif( ! defined $type ) {
+	$self->throw("Must have defined TYPE to create a marker");
+    }
+    $display = $name unless defined $display;
+    $self->type($type);
+    $self->name($name);        
+    $self->display_name($display );
 
-    $name && $self->name($name);    
-    $desc && $self->description($desc);    
-    $type && $self->type($type);
-    $display && $self->display_name($display);
+    $desc && $self->description($desc);
     return;
 }
 

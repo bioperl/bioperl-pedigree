@@ -135,7 +135,9 @@ sub alleles{
     if( @alleles ) {
 	# always sort least to greatest, this
 	# does assume that all alleles are numeric, could be a problem.
-	$self->{'_alleles'} = [sort { $a <=> $b } @alleles];       
+	my $sort = ( $alleles[0] =~ /^\d+$/ ) ? sub { $b <=> $a} : sub { $b cmp $a} ;
+	
+	$self->{'_alleles'} = [sort $sort @alleles];       
     }
     return @{$self->{'_alleles'}};
 }

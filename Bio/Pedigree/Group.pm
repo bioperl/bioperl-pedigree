@@ -160,17 +160,18 @@ sub add_Person{
 	$self->warn("Trying to add a person $person which is not a Bio::Pedigree::PersonI");
 	return 0;
     }
-    my $pid = $person->personid;
-    if( ! defined  $pid ) {
-	$self->throw("No person id!");
-    } elsif( $pid < 0 ) {
+    my $personid = $person->personid;
+    if( ! defined  $personid ) {
+	$self->throw("No person id, assigning a pid for them");	
+    } elsif( $personid < 0 ) {
 	$self->throw("Invalid person id!")
-    }
-    if( ! $overwrite && defined $self->{'_people'}->{$pid} ) {
-	$self->warn("Trying to overwrite already seen $pid with a new person and overwrite is turned off.  Will not replace the existing value");
+    }    
+    if( ! $overwrite && defined $self->{'_people'}->{$personid} ) {
+	$self->warn("Trying to overwrite already seen $personid with a new person and overwrite is turned off.  Will not replace the existing value");
 	return 0;    
     }
-    $self->{'_people'}->{$pid} = $person;
+    if( !defined $person->pid ) { $person->pid($self->num_of_people + 1); }
+    $self->{'_people'}->{$personid} = $person;
     return $self->num_of_people;
 }
 
@@ -328,7 +329,7 @@ sub description {
     if( defined $value ) {
 	$self->{'_description'} = $value;
     }
-    return $self->{'_description'};
+    return $self->{'_description'} || '';
 }
 
 =head2 type

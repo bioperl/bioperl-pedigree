@@ -275,7 +275,7 @@ sub chrom {
 
 sub known_alleles {
     my($self) = @_;
-    my @a = sort { $a <=> $b || $a cmp $b } keys %{ $self->{'_alleles'} } ;
+    my @a = sort { $b <=> $a || $b cmp $a } keys %{ $self->{'_alleles'} } ;
     return @a;
 }
 

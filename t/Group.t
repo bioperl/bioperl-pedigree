@@ -38,16 +38,16 @@ push @p, ( new Bio::Pedigree::Person(-personid => 2,
 				     -gender   => 'F',
 				     -results  => [@r]) );
 
-ok (($p[1]->get_Result('D1S234')->alleles)[1], 110);
-ok (($p[1]->get_Result('D1S234')->alleles)[0], 105);
+my @expected = qw(110 105);
+foreach my $allele ( $p[1]->get_Result('D1S234')->alleles ) {
+    ok ($allele, shift @expected);
+}
 
 @r = ( new Bio::Pedigree::Result(-name    => 'D1S234',
 				 -alleles => [110,102] ),
        new Bio::Pedigree::Result(-name    => 'CFDX',
 				 -alleles => ['A'] ),		
        );
-
-ok (($p[1]->get_Result('D1S234')->alleles)[0], 105);
 
 push @p, ( new Bio::Pedigree::Person(-personid => 3,
 				     -fatherid => 1,
@@ -75,7 +75,11 @@ ok (($group->each_Person)[0]->personid, 1);
 my $person = $group->get_Person(2);
 ok ($person);
 ok ($person->personid, 2);
-ok (($person->get_Result('D1S234')->alleles)[0], 105);
+
+@expected = qw(110 105);
+foreach my $allele ( $person->get_Result('D1S234')->alleles ) {
+    ok ($allele, shift @expected);
+}
 
 $group->remove_Marker('D1S234');
 ok( ! $group->get_Person(2)->get_Result('D1S234'));

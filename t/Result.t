@@ -22,8 +22,8 @@ ok ($result->name, 'D1S123' );
 my @alleles = $result->alleles;
 ok (@alleles, 2);
 
-ok ($alleles[0], 100);
-ok ($alleles[1], 102);
+ok ($alleles[0], 102);
+ok ($alleles[1], 100);
 
 $result->name('NEWNAME');
 ok ($result->name, 'NEWNAME');
@@ -31,5 +31,5 @@ ok ($result->name, 'NEWNAME');
 $result->alleles(306,300);
 @alleles = $result->alleles;
 
-ok ($alleles[0], 300);
-ok ($alleles[1], 306);
+ok ($alleles[0], 306);
+ok ($alleles[1], 300);

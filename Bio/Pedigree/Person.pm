@@ -63,6 +63,7 @@ package Bio::Pedigree::Person;
 use vars qw(@ISA);
 use strict;
 use Bio::Pedigree::PersonI;
+use Tie::IxHash;
 use Bio::Root::RootI;
 
 @ISA = qw(Bio::Pedigree::PersonI Bio::Root::RootI );
@@ -74,7 +75,8 @@ use Bio::Root::RootI;
 =head2 new
 
  Title   : new
- Usage   : my $person = new Bio::Pedigree::Person(-personid  => $id,
+ Usage   : my $person = new Bio::Pedigree::Person(-pid       => $pid,
+						  -personid  => $id,
 						  -fatherid  => $fid,
 						  -motherid  => $mid,
 						  -gender    => $gender
@@ -82,6 +84,7 @@ use Bio::Root::RootI;
  Function: creates a new person
  Returns : Bio::Pedigree::Person object
  Args    : All fields are required unless specified as optional
+            -pid       => (optional) internal id (usually starting with 1)
             -personid  => id for the person (within this family)
                          This is only unique within a family and is typically
                          the order this person occupies in the family file.
@@ -105,13 +108,15 @@ sub new {
 
   # initialize some containers
   $self->{'_results'} = {}; # results are hashed by name
-  
+  tie %{$self->{'_results'}}, "Tie::IxHash"; 
   # parse the arguments
   my ($personid, $fatherid, $motherid, $gender, 
       $displayid, $child,$patsib,$matsib, 
-      $results ) = $self->_rearrange([qw(PERSONID FATHERID MOTHERID GENDER 
-					 DISPLAYID CHILDID PATSIBID MATSIBID
-					 RESULTS)], @args);
+      $results, $pid ) = $self->_rearrange([qw(PERSONID FATHERID 
+					       MOTHERID GENDER 
+					       DISPLAYID CHILDID 
+					       PATSIBID MATSIBID
+					       RESULTS PID)], @args);
   if( ! defined $personid ) {
       $self->throw("Must specify a personid");
   } elsif( ! defined $fatherid ) {
@@ -131,7 +136,7 @@ sub new {
   defined $child && $self->childid($child);
   defined $patsib && $self->patsibid($patsib);
   defined $matsib && $self->matsibid($matsib);
-
+  defined $pid    && $self->pid($pid);
   if( defined $results ) {
       if( ref($results) !~ /array/i ) {
 	  $self->warn("Trying to initialize a person with a results list ($results) which is not an array ref"); 
@@ -401,6 +406,26 @@ sub childid{
 	$self->{'_childid'} = $id;
     }
     return $self->{'_childid'};
+}
+
+=head2 pid
+
+ Title   : pid
+ Usage   : $obj->pid($newval)
+ Function: 
+ Example : 
+ Returns : value of pid
+ Args    : newvalue (optional)
+
+
+=cut
+
+sub pid{
+   my ($obj,$value) = @_;
+   if( defined $value) {
+      $obj->{'_pid'} = $value;
+    }
+    return $obj->{'_pid'};
 }
 
 1;

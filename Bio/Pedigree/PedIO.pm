@@ -60,12 +60,17 @@ Internal methods are usually preceded with a _
 
 
 package Bio::Pedigree::PedIO;
-use vars qw(@ISA);
+use vars qw(@ISA @EXPORT $DEFAULTDIGITLEN);
 use strict;
 
 use Bio::Root::RootI;
+use Symbol;
+require Exporter;
 
-@ISA = qw(Bio::Root::RootI );
+BEGIN { $DEFAULTDIGITLEN = 4; }
+
+@ISA = qw(Bio::Root::RootI Exporter);
+@EXPORT = qw(_digitstr);
 
 =head2 new
 
@@ -84,9 +89,8 @@ use Bio::Root::RootI;
 
 sub new {
     my($class,@args) = @_;
-    if( $class eq 'Bio::Pedigree::PedIO') {
-	$class->SUPER::throw("Do not use this class directly it is an interface");
-    } elsif( $class =~ /Bio::Pedigree::PedIO::(\S+)/ ) {
+
+    if( $class =~ /Bio::Pedigree::PedIO::(\S+)/ ) {
 	my ($self) = $class->SUPER::new(@args);	
 	$self->_initialize(@args);
 	return $self;
@@ -101,7 +105,7 @@ sub new {
 
 	# normalize capitalization
 	return undef unless( &_load_format_module($format) );
-	return "Bio::PedIO::$format"->new(@args);
+	return "Bio::Pedigree::PedIO::$format"->new(@args);
     }
 }
 
@@ -187,7 +191,7 @@ sub _initialize_pedfh {
     my ($self,@args) = @_;
     my $fh;
     $self->{'_readbufferped'} = '';
-    my ($pedfile) = $self->_initialize([qw(PEDFILE)], @args);
+    my ($pedfile) = $self->_rearrange([qw(PEDFILE)], @args);
     return undef if( ! defined $pedfile );
     
     if( ref($pedfile) =~ /GLOB/i ) {
@@ -216,7 +220,7 @@ sub _initialize_datfh {
    my ($self,@args) = @_;
    my $fh;
    $self->{'_readbufferdat'} = '';
-   my ($datfile) = $self->_initialize([qw(DATFILE)], @args);
+   my ($datfile) = $self->_rearrange([qw(DATFILE)], @args);
    return undef if( ! defined $datfile );
    if( ref($datfile) =~ /GLOB/i ) {
        $fh = $datfile;
@@ -280,7 +284,7 @@ sub _datfh{
 
 sub _print_ped {
     my $self = shift;
-    my $fh = $self->_fh || \*STDOUT;
+    my $fh = $self->_pedfh || \*STDOUT;
     print $fh @_;
 }
 
@@ -303,7 +307,7 @@ sub _print_ped {
 
 sub _readline_ped {
     my $self = shift;
-    my $fh = $self->_fh || \*STDIN;
+    my $fh = $self->_pedfh || \*STDIN;
     my $line;
     
     # if the buffer been filled by _pushback then return the buffer
@@ -348,7 +352,7 @@ sub _pushback_ped {
 
 sub _print_dat {
     my $self = shift;
-    my $fh = $self->_fh || \*STDOUT;
+    my $fh = $self->_datfh || \*STDOUT;
     print $fh @_;
 }
 
@@ -371,7 +375,7 @@ sub _print_dat {
 
 sub _readline_dat {
     my $self = shift;
-    my $fh = $self->_fh || \*STDIN;
+    my $fh = $self->_datfh || \*STDIN;
     my $line;
     
     # if the buffer been filled by _pushback then return the buffer
@@ -471,6 +475,30 @@ sub _guess_format {
 sub DESTROY {
     my $self = shift;
     $self->close();
+}
+
+=head2 _digitstr
+
+ Title   : _digitstr
+ Usage   : my $str = &_digitstr($ind);
+ Function: Get an individual string formatted as a N-digit
+           string unless it is 0, N is 4 by default
+ Returns : an N-digit string (string)
+ Args    : number to format
+
+=cut
+
+sub _digitstr {
+    my ($indstr,$N) = @_;
+    $N = $DEFAULTDIGITLEN unless (defined $N && $N =~ /^\d+$/ );
+    if( $indstr eq '0' || !defined $indstr || $indstr eq '' ) { $indstr = '0';}
+    else {
+	while( length($indstr) < $N) {
+	    # prepend '0' to the string while it is less than 4 digits
+	    $indstr = '0' . $indstr;
+	}
+    }
+    return $indstr;
 }
 
 1;

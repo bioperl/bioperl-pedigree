@@ -39,8 +39,8 @@ ok (@results, 2);
 my $result = shift @results;
 ok ($result->alleles, 2);
 ok ($result->name, 'D1S234');
-ok ( ($result->alleles)[0], 100);
-ok ( ($result->alleles)[1], 102);
+ok ( ($result->alleles)[0], 102);
+ok ( ($result->alleles)[1], 100);
 
 $result = shift @results;
 ok (scalar ($result->alleles), 1);
@@ -57,20 +57,23 @@ $person->add_Result($result);
 
 @results = $person->each_Result;
 ok (@results, 3);
-# this is the order they are returned in, 
-# since the order results are returned in from each_Result is
-# not guaranteed to be anything I had to figure this out
-# experimentally.  Typically marker order is NOT important
-# because individuals will be queried one marker at a time.
-ok (($results[1]->alleles)[0], 100);
-ok (($results[1]->alleles)[1], 170);
+
+# results are always returned 
+my @expected = qw(170 100);
+foreach my $allele ( $results[2]->alleles ) {
+    ok ($allele, shift @expected);
+}
 
 $result->alleles(110,165);
-$person->add_Result($result,1);
 
+# test overwriting
+$person->add_Result($result,1);
 @results = $person->each_Result;
 ok (@results, 3);
-ok (($results[1]->alleles)[0], 110);
-ok (($results[1]->alleles)[1], 165);
+
+@expected = qw(165 110);
+foreach my $allele ( $results[2]->alleles ) {
+    ok ($allele, shift @expected);
+}
 
 # add check for remove_Marker
