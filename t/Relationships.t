@@ -51,7 +51,9 @@ my $child    = $group1->get_Person($person->child_id);
 ok (defined $child);
 ok ($child->patsib_id, '9002');
 ok ($child->patsib->person_id, '9002');
-my (@founders) = $group1->find_founders;
-ok ( @founders, 1);
-ok ($founders[0]->[0]->person_id, '2000');
-ok ($founders[0]->[1]->person_id, '2001');
+my ($f) = $group1->find_founders;
+my @founders = sort { $a->person_id <=> $b->person_id } @$f;
+
+ok ( @founders, 2);
+ok ($founders[0]->person_id, '2000');
+ok ($founders[1]->person_id, '2001');
