@@ -63,11 +63,11 @@ package Bio::Pedigree::Draw;
 use strict;
 use vars qw(@ISA %FORMATS %RENDERTYPES $DEFAULTRENDERTYPE);
 
-%FORMATS = ( 'png|gif' => 'Bio::Pedigree::Draw::GD',
-	     'ps|postscript' => 'Bio::Pedigree::Draw::Postscript'
+%FORMATS = ( 'png|jpg|jpeg|gd|gd2' => 'Bio/Pedigree/Draw/GD.pm',
+	     'ps|postscript' => 'Bio/Pedigree/Draw/Postscript.pm'
 	     );
 
-%RENDERTYPES = ( 'pedplot' => 'Bio::Pedigree::Draw::PedPlot');
+%RENDERTYPES = ( 'pedplot' => 'Bio/Pedigree/Draw/PedPlot.pm');
 $DEFAULTRENDERTYPE = 'pedplot';
 
 use Bio::Root::IO;
@@ -118,49 +118,62 @@ sub new {
 =cut
 
 sub draw {
-   my ($self,@args) = @_;
-   $self->_initialize_io(@args);
+    my ($self,@args) = @_;
+    $self->_initialize_io(@args);
 
-   my ($type,$format) = $self->_rearrange([qw(RENDERTYPE FORMAT)],@args);
-   $type = $DEFAULTRENDERTYPE if( !defined $type );
-   
-   $self->throw("Must specify a format for Drawing") if( ! defined $format );
-   
-   my ($rendermodule,$formatmodule);
-   foreach my $key ( keys %RENDERTYPES ) {
-       if( $type =~ /$key/i ) {
-	   $rendermodule = $RENDERTYPE{$key};
-       }
-   }
-   if( ! defined $rendermodule ) { $self->throw("Unrecognized render type $type - it may need to be added to the \%RENDERTYPE hash in the Draw module");
-			     }
-   foreach my $key ( keys %FORMATS ) {
-       if( $format =~ /$key/i ) {
-	   $formatmodule = $FORMATS{$key};
-       }
-   }
-   if( ! defined $formatmodule ) { $self->throw("Unrecognized format  $type - it may need to be added to the \%FORMATS hash in the Draw module");
-			       }
-   eval { 
-       require $formatmodule;
-       require $rendermodule;
-   };
-   if( $@) {
-       $self->warn($@);
-       $self->throw("Either your system is incorrectly configured or there is an error in the Bio::Pedigree::Draw module");
-   }
-   
-   my $drawingengine = $formatmodule->new(-fh => $self->_fh,
-					  -format => $format);
-   my $renderengine = $rendermodule->new(-drawingengine => $drawengine);      
-   my $marker;
-   foreach $marker ( $pedigree->each_Marker ) {
-       last if( $marker->type eq 'DISEASE' );
-   }
-   foreach my $group ( $pedigree->each_Group ) {
-       $renderengine->add_group_to_draw($group, $marker);
-   }
-   $renderengine->write();
+    my ($type,$format,$pedigree) = $self->_rearrange([qw(RENDERTYPE
+							 FORMAT
+							 PEDIGREE)],@args);
+    $self->throw("Must specify a pedigree !") unless defined $pedigree;
+    $type = $DEFAULTRENDERTYPE if( !defined $type );
+
+    $self->throw("Must specify a format for Drawing") if( ! defined $format );
+
+    my ($rendermodule,$formatmodule);
+    foreach my $key ( keys %RENDERTYPES ) {
+	if( $type =~ /$key/i ) {
+	    $rendermodule = $RENDERTYPES{$key};
+	}
+    }
+    if( ! defined $rendermodule ) { 
+	$self->throw("Unrecognized render type $type - it may need to be added to the \%RENDERTYPES hash in the Draw module");
+    }
+    foreach my $key ( keys %FORMATS ) {
+	if( $format =~ /$key/i ) {
+	    $formatmodule = $FORMATS{$key};
+	}
+    }
+    if( ! defined $formatmodule ) { 
+	$self->throw("Unrecognized format  $type - it may need to be added to the \%FORMATS hash in the Draw module");
+    }
+    eval { 
+	require $formatmodule;
+	require $rendermodule;
+    };
+    if( $@) {
+	$self->warn($@);
+	$self->throw("Either your system is incorrectly configured or there is an error in the Bio::Pedigree::Draw module");
+    }
+
+    foreach ( $formatmodule, $rendermodule ) {
+	s/\//::/g;
+	s/\.pm$//;
+    }
+    my $marker;
+    foreach $marker ( $pedigree->each_Marker ) {
+	last if( $marker->type eq 'DISEASE' );
+    }
+    my $renderengine = $rendermodule->new;
+
+    foreach my $group ( $pedigree->each_Group ) {
+	$renderengine->add_group_to_draw($group, $marker, 'A');
+    }
+    my $drawingengine = $formatmodule->new(-width => $renderengine->max_width,
+					   -height => $renderengine->max_height,
+					   -fh => $self->_fh,
+					   -format => $format);
+
+    $renderengine->write(-drawingengine => $drawingengine);
 }
 
 1;
