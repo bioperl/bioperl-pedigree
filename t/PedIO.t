@@ -5,17 +5,19 @@ use Test;
 
 BEGIN {
 	use vars qw($NUMTESTS);
-	$NUMTESTS = 40;
+	$NUMTESTS = 47;
 	plan tests => $NUMTESTS;
 }
 
 use Bio::Pedigree::PedIO;
 use Bio::Root::IO;
 
+my $io = new Bio::Root::IO;
 # test lapis input
 my $lapisio = new Bio::Pedigree::PedIO( -format => 'lapis', -verbose=>2);
 ok ($lapisio);
-my $pedigree = $lapisio->read_pedigree(-pedfile => Bio::Root::IO->catfile('t','data','test1.lap'));
+my $pedigree = $lapisio->read_pedigree(-pedfile => $io->catfile('t','data',
+								'test1.lap'));
 
 ok ($pedigree);
 ok ($pedigree->num_of_groups, 7);
@@ -71,6 +73,27 @@ ok (($person->get_Result('D1S123')->alleles)[1],'148');
 ok (($person->get_Result('D1S987')->alleles)[0],'134');
 ok (($person->get_Result('MKR90')->alleles)[1],'159');
 
+my $pedfmtio = new Bio::Pedigree::PedIO(-format => 'ped');
+
+$pedigree = $pedfmtio->read_pedigree(-pedfile => $io->catfile('t','data',
+							      'example1.pped'),
+				     -datfile => $io->catfile('t','data',
+							      'example1.pdat')
+				     );
+
+($group) = $pedigree->each_Group;
+
+ok ($group);
+ok ($group->center_groupid, "CTR 8888");
+ok ($group->each_Person, 11);
+$person = $group->get_Person(8);
+ok ($person->fatherid, 5);
+ok ( ! defined $person->father );
+
+$group->calculate_relationships;
+ok ( $person->father );
+$person = $group->get_Person(8);
+ok ( $person->father->personid, 5);
 
 $lapisio->write_pedigree(-pedigree => $pedigree,
 			 -pedfile  => \*STDOUT);
