@@ -79,7 +79,8 @@ package Bio::Pedigree::Group;
 use vars qw(@ISA $DEFAULTTYPE);
 use strict;
 
-use Bio::Pedigree::GroupI
+use Bio::Pedigree::GroupI;
+use Tie::IxHash;
 use Bio::Root::RootI;
 
 @ISA = qw(Bio::Pedigree::GroupI Bio::Root::RootI );
@@ -113,8 +114,10 @@ sub new {
   my($class,@args) = @_;
 
   my $self = $class->SUPER::new(@args);
-  $self->{'_people'} = [];
-  $self->{'_peoplecount'} = 0;  
+  
+  $self->{'_people'} = {};
+  tie %{$self->{'_people'}}, "Tie::IxHash";
+
   my ($groupid, $center, $desc, $type,
       $people) = $self->_rearrange([ qw(GROUPID CENTER DESC TYPE
 				      PEOPLE)] , @args);
@@ -163,12 +166,12 @@ sub add_Person{
     } elsif( $pid < 0 ) {
 	$self->throw("Invalid person id!")
     }
-    if( ! $overwrite && defined $self->{'_people'}->[$pid] ) {
+    if( ! $overwrite && defined $self->{'_people'}->{$pid} ) {
 	$self->warn("Trying to overwrite already seen $pid with a new person and overwrite is turned off.  Will not replace the existing value");
 	return 0;    
     }
-    $self->{'_people'}->[$pid] = $person;
-    return (++$self->{'_peoplecount'});
+    $self->{'_people'}->{$pid} = $person;
+    return $self->num_of_people;
 }
 
 =head2 remove_Person
@@ -183,16 +186,19 @@ sub add_Person{
            person is depended upon (ie a parent of an existing child)
            and does not update the child\'s parent ids.  Maybe it should!
 
- Args    : id of person to remove.
+ Args    : id of person to remove or Bio::Pedigree::PersonI object
 
 =cut
 
 sub remove_Person{
     my ($self, $pid) = @_;
-    return 0 if( ! defined $pid || !defined $self->{'_people'}->[$pid] );
+    if( ref($pid) && $pid->isa('Bio::Pedigree::PersonI') ) {
+	$pid = $pid->personid;
+    }
 
-    $self->{'_people'}->[$pid] = undef;
-    $self->{'_peoplecount'}--;  
+    return 0 if( ! defined $pid || !defined $self->{'_people'}->{$pid} );
+
+    delete $self->{'_people'}->{$pid};
     return 1;
 }
 
@@ -208,14 +214,7 @@ sub remove_Person{
 
 sub num_of_people{
     my ($self) = @_;
-    my $count = 0;
-    foreach my $f ( @{ $self->{'_people'} } ) {
-	$count++ if( defined $f && $f->isa('Bio::Pedigree::PersonI') );
-    }
-    print "people count is ",  $self->{'_peoplecount'}, 
-    " count is $count while length is ", 
-    scalar @{$self->{'_people'}}, "\n";
-    return $count;
+    return scalar values %{ $self->{'_people'} };
 }
 
 =head2 each_Person
@@ -234,13 +233,7 @@ sub num_of_people{
 
 sub each_Person{
     my ($self,$id) = @_;
-    my $bool = ( $id && $id eq 'id' );    
-    my ($val,@vals);
-    foreach my $f ( @{ $self->{'_people'} } ) {
-	$val = ( $bool ) ? $f->personid : $f;
-	push @vals, $val;
-    }
-    return @vals;
+    return ( $id && $id eq 'id' ) ? keys %{ $self->{'_people'} } : values %{ $self->{'_people'} };
 }
 
 =head2 get_Person
@@ -256,23 +249,26 @@ sub each_Person{
 sub get_Person{
     my ($self, $id) = @_;
     return undef if( ! defined $id || $id < 0 );
-    return $self->{'_people'}->[$id];
+    return $self->{'_people'}->{$id};
 }
 
-=head2 remove_Variation
+=head2 remove_Marker
 
- Title   : remove_Variation
- Usage   : $group->remove_Variation($name);
- Function: For a given variation name, remove its alleles from all
+ Title   : remove_Marker
+ Usage   : $group->remove_marker($name);
+ Function: For a given Marker name, remove its alleles from all
            individuals contained within the group
  Returns : boolean on success  - false if marker does not exist for anyone
                                  true if at least one person had the marker
- Args    : marker name
+ Args    : marker name or Bio::Pedigree::MarkerI object
 
 =cut
 
-sub remove_Variation{
+sub remove_Marker{
     my ($self, $name) = @_;
+    if( ref($name) && $name->isa('Bio::Pedigree::MarkerI') ) {
+	$name = $name->name;
+    }
     my $foundone = 0;
     foreach my $person ( $self->each_Person ) {
 	if( $person->remove_Result($name) ) { $foundone = 1; }

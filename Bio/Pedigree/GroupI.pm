@@ -158,10 +158,10 @@ sub get_Person{
     $_[0]->_abstractDeath();
 }
 
-=head2 delete_Variation
+=head2 delete_Marker
 
- Title   : delete_Variation
- Usage   : $group->delete_Variation($name);
+ Title   : delete_Marker
+ Usage   : $group->delete_Marker($name);
  Function: For a given variation name, delete its alleles from all
            individuals contained within the group
  Returns : boolean on success  - false if marker does not exist for anyone
@@ -170,7 +170,7 @@ sub get_Person{
 
 =cut
 
-sub delete_Variation{
+sub delete_Marker{
     $_[0]->_abstractDeath();
 }
 
@@ -200,6 +200,24 @@ sub center{
 
 sub groupid {
     $_[0]->_abstractDeath;
+}
+
+=head2 center_groupid
+
+ Title   : center_groupid
+ Usage   : my $id = $group->center_groupid;
+ Function: Convience function which returns the string of
+           the tuple "center groupid" - which should be unique
+           for a data source.
+ Returns : string
+ Args    : none
+
+
+=cut
+
+sub center_groupid{
+   my ($self) = @_;
+   return $self->center . " ". $self->groupid;
 }
 
 =head2 description

@@ -195,6 +195,20 @@ sub each_Result{
     $_[0]->_abstractDeath;
 }
 
+=head2 get_Result
+
+ Title   : get_Result
+ Usage   : my $result = $person->get_Result($name);
+ Function: Get a specific result for a person - or undef if not result exists
+ Returns : Bio::Pedigree::ResultI object or null
+ Args    : name of the result
+
+=cut
+
+sub get_Result{
+    $_[0]->_abstractDeath;
+}
+
 =head2 num_of_results
 
  Title   : num_of_results
