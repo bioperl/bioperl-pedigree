@@ -31,8 +31,8 @@ sub MY::postamble {
 				           
 use ExtUtils::MakeMaker;
 require 5.004;
-$NAME     = 'Bio';
-$DISTNAME = "pedgenomap";
+$NAME     = 'bioperl-pedigree';
+$DISTNAME = 'bioperl-pedigree';
 $VERSION  = "0.01";
 
 
