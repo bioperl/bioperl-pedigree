@@ -1,6 +1,6 @@
 # $Id$
 #
-# BioPerl module for Bio::Pedigree::PedIO::ped.pm
+# BioPerl module for Bio::Pedigree::PedIO::ped
 #
 # Cared for by Jason Stajich <jason@chg.mc.duke.edu>
 #
@@ -12,7 +12,7 @@
 
 =head1 NAME
 
-Bio::Pedigree::PedIO::ped.pm - Ped format implementation of the PedIO
+Bio::Pedigree::PedIO::ped - Ped format implementation of the PedIO
 system for reading linkage format pedigree files
 
 =head1 SYNOPSIS
@@ -56,15 +56,17 @@ Internal methods are usually preceded with a _
 
 =cut
 
-
 # Let the code begin...
 
-
-package Bio::Pedigree::PedIO::ped.pm;
+package Bio::Pedigree::PedIO::ped;
 use vars qw(@ISA);
 use strict;
-
-use Bio::Pedigree::PedIO
+use Bio::Pedigree;
+use Bio::Pedigree::Group;
+use Bio::Pedigree::Person;
+use Bio::Pedigree::Marker;
+use Bio::Pedigree::Result;
+use Bio::Pedigree::PedIO;
 
 @ISA = qw(Bio::Pedigree::PedIO );
 
@@ -79,7 +81,7 @@ use Bio::Pedigree::PedIO
 =cut
 
 sub read_pedigree{
-   my ($self) = @_;
+   my ($self,@args) = @_;
    if( ! $self->_initialize_pedfh(@args) ||
        ! $self->_initialize_datfh(@args) ) {
        $self->throw("Must specify both pedigree and marker data input files for marker format")
@@ -90,16 +92,18 @@ sub read_pedigree{
    while( defined($line = $self->_readline_dat) && $line !~ /\S/ ){}
    if( ! defined $line ) { $self->throw("no data in marker dat file!") }
    # defines the number of markers
+   $line =~ s/^\s+(\S+)/$1/;
    my ($markercount) = split(/\s+/,$line);
-   if( !$markercount ) { $self->throw("Ped format: incorrect dat format -- no marker count at top") }
+   if( !$markercount ) { $self->throw("Ped format: incorrect dat format -- no marker count at top line ") }
    # skip the next line b/c I don't know what to do with it   
    $self->_readline_dat;
    # marker order line
    $line = $self->_readline_dat;
-   my (@order) = split (/\s+,$line);
+   my (@order) = split (/\s+/,$line);
    
    foreach ( 1..$markercount ) {
        while( defined($line = $self->_readline_dat) && $line !~ /\S/ ) {}
+       $line =~ s/^\s+(\S+)/$1/;
        my($type,$alleles, $name) = split(/\s+/,$line);       
        $name =~ s/\#//;
        my $marker;
@@ -148,22 +152,24 @@ sub read_pedigree{
    
    # read in pedigree data
    my %groups;
-   while( defined($line = $self->_readline_ped) ) {
+   my $fh = $self->_pedfh;
+   while( defined( $line = <$fh>) && $line =~ /\S/ ) {
        $line =~ s/^\s+(\S+)/$1/;
        my (@fields) = split(/\s+/,$line);
        my ($center,$displayid) = ( 'UNK');
        if( $fields[-1] =~ /CTR=/ ) {
-	   $center = (pop @fields =~ /CTR=(\S+)/);
+	   ($center) = ((pop @fields) =~ /CTR=(\S+)/);
        }
        if( $fields[-1] =~ /ID=/ ) {
-	   $displayid = (pop @fields =~ /ID=(\S+)/);
+	   ($displayid) = ((pop @fields) =~ /ID=(\S+)/);
        }       
        my ($groupid,$id,$father,$mother,$child,$patsib,
 	   $matsib,$gender,$proband,@results) = @fields;
-       if( ! defined $groups{$ctr} ) {
-	   $groups{$ctr} = new Bio::Pedigree::Group(-center =>$center,
-						    -groupid=>$groupid,
-						    -type   =>'FAMILY');
+       if( ! defined $groups{"$center\_$groupid"} ) {
+	   $groups{"$center\_$groupid"} = new Bio::Pedigree::Group
+	       (-center =>$center,
+		-groupid=>$groupid,
+		-type   =>'FAMILY');
        }
        my $person = new Bio::Pedigree::Person(-personid => $id,
 					      -father   => $father,
@@ -174,14 +180,19 @@ sub read_pedigree{
 					      -patsib   => $patsib,
 					      -matsib   => $matsib,
 					      -proband  => $proband);
-       foreach my $marker ( $group->each_Marker ) {
-	   my @alleles = splice(@r, 0, $marker->num_result_alleles);
+
+       foreach my $marker ( $pedigree->each_Marker ) {
+	   my @alleles = splice(@results, 0, $marker->num_result_alleles);
 	   my $result = new Bio::Pedigree::Result(-name => $marker->name,
 						  -alleles => [ @alleles]);
 	   $person->add_Result($result);
        }
-       $group->add_Person($person);
-   }  
+       $groups{"$center\_$groupid"}->add_Person($person);
+   }
+   foreach my $group ( values %groups ) {
+       $pedigree->add_Group($group);
+   }
+ 
    return $pedigree;
 }
 
@@ -212,13 +223,61 @@ sub write_pedigree {
 
     my ($pedigree) = $self->_rearrange([qw(PEDIGREE)],@args);
     # write the dat file first
-    my @markrs = $pedigree->each_Marker;
+    my @markers = $pedigree->each_Marker;
     $self->_print_dat(sprintf("%2d %d %d %d\n",scalar @markers, 0,0,5));
-    $self->_print_dat("0 0.0 0.0 0\n"); # intricacies of the ped format 
+    $self->_print_dat("0 0.0 0.0 0\n"); # intricacies of the dat format 
                                         # I don't understand at this point
     $self->_print_dat(" ", join(" ", 1..scalar @markers), "\n");
-    foreach my $marker ( @markrs) {
-	$self->_print_dat(sprintf("%2s 
+    my $quantcount = 0;
+    foreach my $marker ( @markers) {
+	if( $marker->type eq 'DISEASE' ) {
+	    $self->_print_dat(sprintf("%2s %2s #%s", $marker->type_code,
+				      scalar $marker->frequencies,
+				      $marker->name));
+	} elsif( $marker->type eq 'QUANTITATIVE' ) {
+	    $self->_print_dat(sprintf("%2s %2s #%s", $marker->type_code,
+				      $quantcount++,
+				      $marker->name));
+	} elsif( $marker->type eq 'VARIATION' ) {
+	    $self->_print_dat(sprintf("%2s %2s #%s", $marker->type_code,
+				      $marker->known_alleles,
+				      $marker->name));
+	    $self->_print_dat(join(' ', $marker->known_alleles), "\n");
+	} else { 
+	    $self->warn("Unkown marker ". $marker->name . " skipping...");
+	}
+    }
+    $self->_print_dat("0 0\n","0.00 0.00 0.00 0.00 0.00\n",
+		      "1 0.050 0.150\n0.200 0.100 0.400\n");
+    
+    # done with dat
+    my %personremap;
+    my %gendermap = ( 'M' => 1,
+		      'F' => 2,
+		      'U' => 0);
+    $pedigree->calculate_all_relationships;
+    foreach my $group ( $pedigree->each_Group ) {
+	my $personcount = 1;
+	foreach my $person ( $group->each_Person ) {
+	    $personremap{$person->personid} = $personcount++;
+	    $self->_print_ped(sprintf("%s %2d %2d %2d %2d %2d %2d %d %d ",
+				      $group->groupid, 
+				      $personremap{$person->personid},
+				      $personremap{$person->fatherid},
+				      $personremap{$person->motherid},
+				      $personremap{$person->patsibid},
+				      $personremap{$person->matsibid},
+				      $gendermap{$person->gender},
+				      $person->proband
+				      ));
+	    foreach my $result ( $group->each_Result ) {
+		$self->_print_ped(join(' ', map { sprintf("%5s ")} 
+				       $result->alleles));
+	    }	    
+	    $self->_print_ped(sprintf("ID=%s CTR=%s", $person->displayid,
+				      $group->center));
+	    $self->_print_ped("\n");
+	}
     }
 }
 
