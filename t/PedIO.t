@@ -2,8 +2,9 @@
 # -*-Perl-*-
 
 use strict;
-use vars qw($error $NUMTESTS $SKIPXML) ;
+use vars qw($error $NUMTESTS $SKIPXML $DEBUG) ;
 
+$DEBUG = $ENV{'BIOPERLDEBUG'} || 0;
 
 BEGIN {
     $error = 0; 
@@ -15,12 +16,12 @@ BEGIN {
     }
     use Test;
     
-    $NUMTESTS = 48;
+    $NUMTESTS = 54;
     plan tests => $NUMTESTS;
 
     eval { require Bio::Pedigree::PedIO; };
     if( $@ ) {
-	print STDERR $@;
+	print STDERR $@ if $DEBUG;
     }
     eval { require XML::Writer };
     if( $@ ) {
@@ -30,7 +31,7 @@ BEGIN {
 
 END {
     for ($Test::ntest..$NUMTESTS) {
-#	skip("unable to run all of the PedIO tests, check your XML installation",1);
+	skip("unable to run all of the PedIO tests, check your XML installation",1);
     }
 }
 
@@ -51,7 +52,7 @@ ok ($pedigree);
 ok ($pedigree->num_of_groups, 7);
 ok ($pedigree->num_of_markers, 5);
 
-my @markers = sort { $a->name cmp $b->name } $pedigree->each_Marker;
+my @markers = sort { $a->name cmp $b->name } $pedigree->get_Markers;
 ok ( (shift @markers)->name, 'AAA-REC');
 ok ( (shift @markers)->name, 'D1S123');
 ok ( (shift @markers)->name, 'D1S234');
@@ -59,7 +60,7 @@ ok ( (shift @markers)->name, 'D1S987');
 ok ( (shift @markers)->name, 'MKR90');
 ok ( ! @markers );
 
-my @groups = sort { $a->center_groupid cmp $b->center_groupid} $pedigree->each_Group;
+my @groups = sort { $a->center_groupid cmp $b->center_groupid} $pedigree->get_Groups;
 
 ok( ( shift @groups)->center_groupid, 'XXX 2200');
 ok( ( shift @groups)->center_groupid, 'XXX 2201');
@@ -81,8 +82,8 @@ ok ( $person->mother_id, '1001');
 ok ( ! $person->child_id);
 ok ( $person->gender, 'M');
 ok ( $person->get_marker_names, 5);
-
-ok (($person->get_Genotypes('D1S123')->get_Alleles)[0],'148');
+my @alleles = sort { $a <=> $b } ($person->get_Genotypes('D1S123')->get_Alleles);
+ok ($alleles[0],'148');
 
 $person = $group->get_Person('0001');
 ok ( $person);
@@ -107,7 +108,7 @@ $pedigree = $pedfmtio->read_pedigree(-pedfile => $io->catfile('t','data',
 							      'example1.pdat')
 				     );
 
-($group) = $pedigree->each_Group;
+($group) = $pedigree->get_Groups;
 
 ok ($group);
 ok ($group->center_groupid, "CTR 8888");
@@ -121,9 +122,38 @@ ok ( $person->father );
 $person = $group->get_Person(8);
 ok ( $person->father->person_id, 5);
 
-$lapisio->write_pedigree(-pedigree => $pedigree,
-			 -pedfile  => \*STDOUT);
+if( $DEBUG ) {
+    $lapisio->write_pedigree(-pedigree => $pedigree,
+			     -pedfile  => \*STDOUT);
+}
+$pedfmtio = new Bio::Pedigree::PedIO(-format => 'ped');
 
+$pedigree = $pedfmtio->read_pedigree(-pedfile => $io->catfile('t', 'data', 
+							      'C14_Comb_B.AFFB4.chr14.pre.txt'),
+				     -datfile => $io->catfile('t', 'data', 
+							      'C14_Comb.dat'));
+
+($group) = sort { $a->group_id <=> $b->group_id } $pedigree->get_Groups;
+
+ok ($group);
+
+ok ($group->center_groupid, "UNK 13");
+ok ($group->each_Person, 4);
+
+$person = $group->get_Person(4);
+
+ok ($person->father_id, 1);
+ok ( ! $person->father );
+
+$group->calculate_relationships;
+ok ( $person->father );
+$person = $group->get_Person(3);
+ok ( $person->father->person_id, 1);
+
+if( $DEBUG ) {
+    $lapisio->write_pedigree(-pedigree => $pedigree,
+			     -pedfile  => \*STDOUT);
+}
 unless( $SKIPXML ) { 
     my $xmlio = new Bio::Pedigree::PedIO( -format => 'xml' );
     $xmlio->write_pedigree( -pedigree => $pedigree,
