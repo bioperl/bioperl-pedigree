@@ -173,7 +173,7 @@ sub read_pedigree{
 
     my %groups;
     $fh = $self->_pedfh;
-    while( defined( $line = <$fh>) && $line =~ /\S/ ) {
+    while( defined( $line = $fh->_readline) && $line =~ /\S/ ) {
 	$line =~ s/^\s+(\S+)/$1/;
 	my (@fields) = split(/\s+/,$line);
 
@@ -182,9 +182,9 @@ sub read_pedigree{
 	my ($groupid,$id,$father,$mother,$gender,$proband,@results) = @fields;
 	if( ! defined $groups{$groupid} ) {
 	    $groups{$groupid} = new Bio::Pedigree::Group(
-							 -center=>'mock',
+							 -center  =>'UNK',
 							 -group_id=>$groupid,
-							 -type   =>'FAMILY'
+							 -type    =>'FAMILY'
 							 );
 	}
 
@@ -199,7 +199,7 @@ sub read_pedigree{
 	    my @alleles = splice(@results, 0, $marker->num_result_alleles);
 	    my $result = new Bio::PopGen::Genotype(-marker_name => $marker->name,
 						   -alleles => [ @alleles]);
-	    $person->add_Result($result);
+	    $person->add_Genotype($result);
 	}
 	$groups{$groupid}->add_Person($person);
     }
