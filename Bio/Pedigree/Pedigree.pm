@@ -322,10 +322,9 @@ sub each_Marker{
 
  Title   : get_Marker
  Usage   : my $marker = $pedigree->get_Marker($name);
- Function: 
- Example :
- Returns : 
- Args    :
+ Function: Retrieve a specific marker
+ Returns : Bio::Pedigree::MarkerI object
+ Args    : [string] Marker unique name
 
 
 =cut
