@@ -496,7 +496,6 @@ sub _add_child {
 	return 1;
     } else {
 #	return 0 if( $parent->childid == $child);
-
 	my $firstchild = $group->get_Person($parent->childid);
 	$parent->child($firstchild);
 	if( ! defined $firstchild ) {
@@ -513,25 +512,25 @@ sub _add_child {
 
 sub _add_sib {
     my ($group,$sib,$id, $paternalsib) = @_;
+    return 0 if( ! defined $sib || $sib->personid == $id );
     my $sibname = ( $paternalsib ) ? 'patsibid' : 'matsibid';
-    if( $sib->$sibname() ) {
-	return 0 if ( $sib->$sibname() == $id);
+    my $sibobj = ( $paternalsib ) ? 'patsib' : 'matsib';
+    if( ! $sib->$sibname() ) {
+	$sib->$sibname($id);
+	my $personref = $group->get_Person($id);
+	$sib->$sibobj($personref);
+	return 1;
+    } else {
 	my $firstsib = $group->get_Person($sib->$sibname());
+	$sib->$sibobj($firstsib);
+	return 0 if ( $sib->$sibname() == $id);
+	
 	if( ! defined $firstsib) {
 	    $group->throw("Person ". $sib->personid . 
 			  "has a reference to 1st $sibname as ".
 			  $sib->$sibname() . " which does not exist in this group");
 	}	
-	$group->_add_sib($firstsib, $id, $paternalsib);	
-    }
-    else {
-	$sib->$sibname($id);
-
-	my $personref = $group->get_Person($id);
-	my $sibobj = ( $paternalsib ) ? 'patsib' : 'matsib';
-    
-	$sib->$sibobj($personref);
-	return 1;
+	return $group->_add_sib($firstsib, $id, $paternalsib);	
     }
 }
 1;
