@@ -97,7 +97,7 @@ use Bio::Pedigree::Group;
 use Bio::Pedigree::Marker;
 use POSIX;
 
-@ISA = qw(Bio::Root::RootI );
+@ISA = qw(Bio::Root::Root );
 
 =head2 new
 
