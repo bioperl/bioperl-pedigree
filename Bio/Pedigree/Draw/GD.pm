@@ -204,7 +204,7 @@ sub type{
     my ($obj,$value) = @_;
     if( defined $value) {
 	$value =~ s/jpg/jpeg/;
-	if( $value !~ /png|jpeg|gd|gd2|wbmp/ ) {
+	if( $value !~ /png|jpeg|gd|gd2|wbmp|gif/ ) {
 	    $obj->throw("type $value is unrecognized for GD");
 	}
 	$obj->{'_type'} = $value;
