@@ -72,6 +72,7 @@ BEGIN {
            -name => 'name'
            -desc => 'desc here',
            -type => 'DX',
+
 =cut
 
 sub new {
