@@ -12,15 +12,25 @@
 
 =head1 NAME
 
-Bio::Pedigree::PedIO::xml - Pedigree IO for an internal Pedigree XML format 
+Bio::Pedigree::PedIO::xml - Pedigree IO driver for an internal Pedigree XML format 
 
 =head1 SYNOPSIS
 
-Give standard usage here
+  # do not use this module directly it is a driver
+  use Bio::Pedigree::PedIO;
+  my $parser = new Bio::Pedigree::PedIO(-format => 'ped');
+  my $pedigree = $parser->read_pedigree(-pedfile => 'C14_Comb_B.AFFB4.chr14.pre.txt',
+				     -datfile => 'C14_Comb.dat');
+  my $writer = new Bio::Pedigree::PedIO(-format => 'xml');
+  $writer->write_pedigree( -pedigree => $pedigree,
+			   -pedfile  => ">pedigree.xml");
 
 =head1 DESCRIPTION
 
-Describe the object here
+This object is for converting to/from an internal XML format.  By
+internal I mean that it is not really published and is only a utility
+for the author.  The DTD is in the resources directory of the
+bioperl-pedigree distribution.
 
 =head1 FEEDBACK
 
@@ -137,7 +147,7 @@ sub write_pedigree {
     $writer->startTag("PEDIGREE", 
 		      'date' => $pedigree->date,
 		      $pedigree->comment ? ("comment" => $pedigree->comment) :
-		      undef
+		      ''
 		      );
     foreach my $marker ( $pedigree->get_Markers ) {
 	my %markertag = ( "name" => $marker->name,
@@ -147,7 +157,7 @@ sub write_pedigree {
 			  "result_allele_count" => $marker->num_result_alleles,
 			  );
 
-	if ( defined $marker->description &&  $marker->description ne '' ) {
+	if ( defined $marker->description && $marker->description ne '' ) {
 	    $markertag{'description'} = $marker->description;
 	}	
 	if( $marker->can('chrom') ) {
@@ -194,7 +204,7 @@ sub write_pedigree {
 			  "id"          => $group->group_id,
 			  "center"      => $group->center,
 			  "type"        => uc $group->type,
-			  "description" => $group->description);	
+			  "description" => $group->description || '');	
 	foreach my $person ( $group->each_Person ) {
 	    my %persontags = ("id"        => $person->person_id,
 			      "displayid" => $person->display_id,
