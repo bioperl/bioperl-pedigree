@@ -1,4 +1,4 @@
-
+# $Id$
 #
 # BioPerl module for Bio::Pedigree::Draw
 #
@@ -12,7 +12,7 @@
 
 =head1 NAME
 
-Bio::Pedigree::Draw - DESCRIPTION of Object
+Bio::Pedigree::Draw - Object which initiates drawing calling the requested renderer and graphics engine
 
 =head1 SYNOPSIS
 
@@ -167,13 +167,16 @@ sub draw {
 
     foreach my $group ( $pedigree->each_Group ) {
 	$renderengine->add_group_to_draw($group, $marker, 'A');
+        last;
     }
+    # reposition the drawing
+    $renderengine->calibrate();
     my $drawingengine = $formatmodule->new(-width => $renderengine->max_width,
-					   -height => $renderengine->max_height,
+					   -height => $renderengine->max_height ,
 					   -fh => $self->_fh,
 					   -format => $format);
 
-    $renderengine->write(-drawingengine => $drawingengine);
+    $renderengine->write($drawingengine);
 }
 
 1;

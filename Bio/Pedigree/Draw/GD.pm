@@ -92,7 +92,7 @@ sub new {
   if( ! $h || ! $w ) {
       $self->throw("Must specify height and width for GD to draw image");
   }
-  my $gd = new GD::Image($h,$w);
+  my $gd = new GD::Image($w,$h);
   $self->type($type);
   $self->_gdengine($gd);
   $self->_fh($fh);
@@ -128,7 +128,8 @@ sub DESTROY {
 sub _get_color {
    my ($self,$colorname) = @_;
    return undef unless defined $colorname;
-   return $self->{'_colors'}->{uc $colorname} || $self->throw("Color $colorname is not known");
+   $colorname = uc $colorname;
+   return $self->{'_colors'}->{$colorname};
 }
 
 =head2 _initialize_colors
@@ -141,10 +142,12 @@ sub _get_color {
 sub _initialize_colors {
    my ($self) = @_;
    $self->{'_colors'} = {};
+
    $self->{'_colors'}->{'WHITE'} = $self->_gdengine->colorAllocate(255,255,255);
    $self->{'_colors'}->{'BLACK'} = $self->_gdengine->colorAllocate(0,0,0);
    $self->{'_colors'}->{'RED'} = $self->_gdengine->colorAllocate(255,0,0);
    $self->{'_colors'}->{'BLUE'} = $self->_gdengine->colorAllocate(0,0,255);
+   
    return;
 }
 
@@ -233,7 +236,6 @@ sub draw_line {
     $self->_gdengine->line($startx,$starty,$endx,$endy,$color);
 }
 
-
 =head2 draw_box
 
  Title   : draw_box
@@ -255,7 +257,9 @@ sub draw_box {
     my ($self, $startx,$starty,$endx,$endy,$linewidth,$linecolor,$fill) = @_;
     my $color = $self->_get_color($linecolor);
     my $fillcolor = $self->_get_color($fill);
-    if($fill !~ /white/i ) {
+    my $white = $self->_get_color('WHITE');
+
+    if(defined $fillcolor && $fillcolor != $white ) {
 	$self->_gdengine->filledRectangle($startx,$starty,$endx,$endy,
 					  $fillcolor);
     } else { 
@@ -285,10 +289,12 @@ sub draw_oval {
 	$linecolor,$fill) = @_;
     my $color = $self->_get_color($linecolor);
     my $fillcolor = $self->_get_color($fill);
+    my $white = $self->_get_color('WHITE');
     $self->_gdengine->arc($centerx,$centery,
 			  $width, $height,
 			  0, 360, $color);
-    if($fill !~ /white/i ) {
+
+    if(defined $fillcolor && $fillcolor != $white ) {
 	$self->fill($centerx,$centery,$fillcolor);
     }
 }
