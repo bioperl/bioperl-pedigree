@@ -71,3 +71,5 @@ $person->add_Result($result,1);
 ok (@results, 3);
 ok (($results[1]->alleles)[0], 110);
 ok (($results[1]->alleles)[1], 165);
+
+# add check for remove_Marker
