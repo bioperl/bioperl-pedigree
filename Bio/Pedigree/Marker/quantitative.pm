@@ -2,6 +2,8 @@
 #
 # module for Bio::Pedigree::Marker::quatitative
 #
+# Please direct questions and support issues to <bioperl-l@bioperl.org> 
+#
 # Cared for by Jason Stajich  <jason@bioperl.org>
 #
 # Copyright Jason Stajich
