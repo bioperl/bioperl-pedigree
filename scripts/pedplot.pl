@@ -1,5 +1,6 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 use strict;
+use warnings;
 use Bio::Pedigree::Draw;
 use Bio::Pedigree::PedIO;
 use Getopt::Long;
